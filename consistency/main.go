@@ -1,4 +1,4 @@
-package store
+package consistency
 
 var Core = struct {
 	*Network

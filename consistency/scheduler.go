@@ -1,4 +1,4 @@
-package store
+package consistency
 
 func RefreshShoppingCart() {
 	mes := NewMessage(MESSAGE_SEND_RED)

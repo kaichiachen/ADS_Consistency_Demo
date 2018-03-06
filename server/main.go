@@ -2,13 +2,13 @@ package main
 
 import (
 	"common"
+	"consistency"
 	"encoding/json"
 	"flag"
 	"fmt"
 	"github.com/julienschmidt/httprouter"
 	"log"
 	"net/http"
-	"store"
 )
 
 var port int
@@ -37,15 +37,15 @@ func additem(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 }
 
 func refresh(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
-	store.RefreshShoppingCart()
+	consistency.RefreshShoppingCart()
 }
 
 func clear(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
-	store.ClearShoppingCart()
+	consistency.ClearShoppingCart()
 }
 
 func settle(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
-	store.SettleShoppingCart()
+	consistency.SettleShoppingCart()
 }
 
 func main() {
