@@ -3,20 +3,16 @@ package main
 import (
 	"bufio"
 	"bytes"
-	"common"
 	"flag"
 	"fmt"
-	"log"
-	"net"
 	"net/http"
 	"os"
-	"regexp"
 )
 
 var port int
 
 func init() {
-	flag.IntVar(&port, "port", common.SERVER_DEFAULT_PORT, "server port")
+	flag.IntVar(&port, "port", 33, "server port")
 }
 
 func usage() {
@@ -33,11 +29,11 @@ func main() {
 		fmt.Println("购物车:")
 		fmt.Println()
 		fmt.Println("请问您要：")
-		fmt.Println("1. 刷新购物车")
-		fmt.Println("2. 看商品")
-		fmt.Println("3. 移除某项商品")
-		fmt.Println("4. 清空购物车")
-		fmt.Println("5. 结算购物车")
+		fmt.Println("1. 新增商品")   // red
+		fmt.Println("2. 看商品")    // blue
+		fmt.Println("3. 移除某项商品") // blue
+		fmt.Println("4. 清空购物车")  // blue
+		fmt.Println("5. 结算购物车")  //red
 		input := <-readStdin()
 		switch input {
 		case "1":
@@ -82,22 +78,4 @@ func readStdin() chan string {
 		}
 	}()
 	return cb
-}
-
-func getIPAddress() string {
-	conn, err := net.Dial("udp", "8.8.8.8:80")
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer conn.Close()
-
-	localAddr := conn.LocalAddr().(*net.UDPAddr)
-
-	return localAddr.IP.String()
-}
-
-func findIPAddress(input string) string {
-	validIpAddressRegex := "([0-9]{1,3}.[0-9]{1,3}.[0-9]{1,3}.[0-9]{1,3})"
-	re := regexp.MustCompile(validIpAddressRegex)
-	return re.FindString(input)
 }

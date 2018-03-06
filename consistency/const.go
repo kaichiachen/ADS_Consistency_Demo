@@ -16,4 +16,5 @@ const (
 const (
 	MESSAGE_SEND_RED = iota + 20
 	MESSAGE_SEND_TOKEN
+	MESSAGE_SEND_REPLY
 )

@@ -4,6 +4,8 @@ import "bytes"
 
 type Message struct {
 	Identifier byte
+	Data       []byte
+	Reply      chan Message
 }
 
 func NewMessage(id byte) *Message {
