@@ -8,9 +8,7 @@ import (
 	"fmt"
 	"github.com/julienschmidt/httprouter"
 	"log"
-	"net"
 	"net/http"
-	"regexp"
 )
 
 type arrayFlags []string
@@ -44,17 +42,23 @@ func Index(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 
 func additem(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	decoder := json.NewDecoder(r.Body)
-	var addItem common.AddItem
-	err := decoder.Decode(&addItem)
+	var addCartItem common.AddCartItem
+	err := decoder.Decode(&addCartItem)
 	if err != nil {
 		fmt.Println(err)
 	}
-	fmt.Println(addItem)
-
+	consistency.AddItemToCart(addCartItem)
 }
 
-func refresh(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
-	consistency.RefreshShoppingCart()
+func newitem(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+	decoder := json.NewDecoder(r.Body)
+	var newItem common.NewItem
+	err := decoder.Decode(&newItem)
+	if err != nil {
+		fmt.Println(err)
+	}
+	consistency.NewItem(newItem)
+
 	resp := common.Response{Succeed: true}
 	jData, err := json.Marshal(resp)
 	if err != nil {
@@ -76,12 +80,14 @@ func settle(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 func main() {
 	flag.Usage = usage
 	flag.Parse()
+	log.SetFlags(log.LstdFlags | log.Lshortfile)
+
 	consistency.Start(getIPAddress(), comuport, nodes)
 
 	router := httprouter.New()
 	router.GET("/", Index)
 	router.POST("/additem", additem)
-	router.POST("/refrsh", refresh)
+	router.POST("/newitem", newitem)
 	router.POST("/settle", settle)
 	router.POST("/clear", clear)
 	fmt.Println(fmt.Sprintf("localhost:%d", restport))
@@ -89,19 +95,14 @@ func main() {
 }
 
 func getIPAddress() string {
-	conn, err := net.Dial("udp", "8.8.8.8:80")
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer conn.Close()
+	// conn, err := net.Dial("udp", "8.8.8.8:80")
+	// if err != nil {
+	// 	log.Fatal(err)
+	// }
+	// defer conn.Close()
 
-	localAddr := conn.LocalAddr().(*net.UDPAddr)
+	// localAddr := conn.LocalAddr().(*net.UDPAddr)
 
-	return localAddr.IP.String()
-}
-
-func findIPAddress(input string) string {
-	validIpAddressRegex := "([0-9]{1,3}.[0-9]{1,3}.[0-9]{1,3}.[0-9]{1,3})"
-	re := regexp.MustCompile(validIpAddressRegex)
-	return re.FindString(input)
+	// return localAddr.IP.String()
+	return "localhost"
 }
