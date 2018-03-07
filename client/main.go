@@ -5,6 +5,7 @@ import (
 	"bytes"
 	"flag"
 	"fmt"
+	"log"
 	"net/http"
 	"os"
 )
@@ -22,6 +23,8 @@ func usage() {
 var url string
 
 func main() {
+
+	log.SetFlags(log.LstdFlags | log.Lshortfile)
 	url = fmt.Sprintf("http://localhost:%d", port)
 	fmt.Println("欢迎光临线上购物书城")
 	for {

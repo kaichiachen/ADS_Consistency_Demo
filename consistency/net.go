@@ -5,6 +5,8 @@ import (
 	"io"
 	"log"
 	"net"
+	"regexp"
+	"strconv"
 	"time"
 )
 
@@ -12,7 +14,8 @@ type NodeChannel chan *Node
 type ConnectionQueue chan string
 type Node struct {
 	*net.TCPConn
-	lastSeen int
+	lastSeen  int
+	connected bool
 }
 type Nodes map[string]*Node
 type Network struct {
@@ -41,11 +44,10 @@ func (n *Network) Run() {
 		select {
 		case node := <-listenCb:
 			Core.Nodes.AddNode(node)
-
 		case node := <-n.ConnectionCallback:
 			Core.Nodes.AddNode(node)
 		case message := <-n.BroadcastQueue:
-			go n.BroadcastMessage(n.Nodes, message, 3)
+			go n.BroadcastMessage(message)
 		}
 	}
 }
@@ -71,7 +73,7 @@ func StartListening(address string) NodeChannel {
 				log.Println(err)
 			}
 
-			cb <- &Node{connection, int(time.Now().Unix())}
+			cb <- &Node{connection, int(time.Now().Unix()), true}
 		}
 	}(listener)
 
@@ -79,7 +81,8 @@ func StartListening(address string) NodeChannel {
 }
 
 func (n Nodes) AddNode(node *Node) bool {
-	ip, port, _ := net.SplitHostPort(node.TCPConn.RemoteAddr().String())
+	ip, p, _ := net.SplitHostPort(node.TCPConn.RemoteAddr().String())
+	port, _ := strconv.Atoi(p)
 	addr := fmt.Sprintf("%s:%d", ip, port)
 
 	if addr != Core.Network.Address && n[addr] == nil {
@@ -100,7 +103,7 @@ func HandleNode(node *Node) {
 		var bs []byte = make([]byte, 1024*1000)
 		n, err := node.TCPConn.Read(bs)
 		if err == io.EOF {
-			fmt.Printf("%s： Connection Closed\n", node.TCPConn.RemoteAddr().String())
+			log.Printf("%s： Connection Closed\n", node.TCPConn.RemoteAddr().String())
 			node.TCPConn.Close()
 			break
 		}
@@ -147,8 +150,8 @@ func CreateConnectionQueue() (ConnectionQueue, NodeChannel) {
 			address := <-in
 			log.Println(address)
 			if address != Core.Network.Address && Core.Nodes[address] == nil {
-				log.Printf("Connect to node: %s\n", address)
-				go ConnectToNode(address, 5*time.Second, false, out)
+				log.Printf("Connecting to node: %s\n", address)
+				go ConnectToNode(address, 5*time.Second, true, out)
 			}
 		}
 	}()
@@ -173,7 +176,7 @@ loop:
 			con, err = net.DialTCP("tcp", nil, addrDst)
 
 			if con != nil {
-				cb <- &Node{con, int(time.Now().Unix())}
+				cb <- &Node{con, int(time.Now().Unix()), true}
 				breakChannel <- true
 			}
 		}()
@@ -181,7 +184,6 @@ loop:
 		select {
 		case <-time.NewTimer(timeout).C:
 			if !retry {
-				log.Println("timeout")
 				break loop
 			}
 		case <-breakChannel:
@@ -190,26 +192,25 @@ loop:
 	}
 }
 
-func (n *Network) BroadcastMessage(nodes Nodes, message Message, count int) {
-	if len(nodes) == 0 {
-		return
-	}
-	if count <= 0 {
-		for _, node := range nodes {
-			log.Println("Error broadcast to", node.TCPConn.RemoteAddr())
+func (n *Network) BroadcastMessage(message Message) {
+	b, _ := message.MarshalBinary()
+	for k, node := range n.Nodes {
+		p := k[len(findIPAddress(k))+1:]
+		port, _ := strconv.Atoi(p)
+		if port >= 20000 && port <= 20002 {
+			fmt.Println("Broadcasting...", k)
+			go func() {
+				_, err := node.TCPConn.Write(b)
+				if err != nil {
+					fmt.Println("Error broadcast to", node.TCPConn.RemoteAddr())
+				}
+			}()
 		}
 	}
-	ns := Nodes{}
-	b, _ := message.MarshalBinary()
-	for k, node := range nodes {
-		fmt.Println("Broadcasting...", k)
-		go func() {
-			_, err := node.TCPConn.Write(b)
-			if err != nil {
-				// fmt.Println("Error broadcast to", node.TCPConn.RemoteAddr())
-				ns[k] = node
-			}
-		}()
-	}
-	n.BroadcastMessage(ns, message, count-1)
+}
+
+func findIPAddress(input string) string {
+	validIpAddressRegex := "([0-9]{1,3}.[0-9]{1,3}.[0-9]{1,3}.[0-9]{1,3})"
+	re := regexp.MustCompile(validIpAddressRegex)
+	return re.FindString(input)
 }

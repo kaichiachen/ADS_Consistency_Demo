@@ -1,7 +1,13 @@
 package common
 
-type AddItem struct {
-	Name string
+type AddCartItem struct {
+	Name   string
+	Volume int
+}
+
+type NewItem struct {
+	Name   string
+	Volume uint32
 }
 
 type Response struct {

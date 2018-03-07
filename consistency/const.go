@@ -6,8 +6,8 @@ const (
 )
 
 const (
-	OP_REFRESH = iota + 2
-	OP_ADD
+	OP_ADDITEM = iota + 2
+	OP_ADDCART
 	OP_REMOVE
 	OP_CLEAR
 	OP_SETTLE
