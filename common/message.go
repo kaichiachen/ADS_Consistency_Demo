@@ -8,6 +8,7 @@ type AddCartItem struct {
 type NewItem struct {
 	Name   string
 	Volume uint32
+	Price  uint32
 }
 
 type RemoveCartItem struct {

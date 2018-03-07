@@ -14,6 +14,7 @@ type Item struct {
 	Name   string
 	Volume uint32
 	ID     string
+	Price  uint32
 }
 
 func (item *Item) MarshalBinary() ([]byte, error) {
@@ -22,6 +23,7 @@ func (item *Item) MarshalBinary() ([]byte, error) {
 	bs.Write(FitBytes([]byte(item.Name), ITEM_NAME_LENGTH))
 	bs.Write([]byte(item.ID)[:ITEM_ID_LENGTH])
 	binary.Write(bs, binary.LittleEndian, item.Volume)
+	binary.Write(bs, binary.LittleEndian, item.Price)
 	return bs.Bytes(), nil
 }
 
@@ -30,5 +32,6 @@ func (item *Item) UnMarshalBinary(d []byte) error {
 	item.Name = string(bs.Next(ITEM_NAME_LENGTH))
 	item.ID = string(bs.Next(ITEM_ID_LENGTH))
 	binary.Read(bytes.NewBuffer(bs.Next(4)), binary.LittleEndian, &item.Volume)
+	binary.Read(bytes.NewBuffer(bs.Next(4)), binary.LittleEndian, &item.Price)
 	return nil
 }

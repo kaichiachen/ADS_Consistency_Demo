@@ -10,7 +10,7 @@ func NewItem(item common.NewItem) chan common.Response {
 	resp := common.NewResponse()
 	mes := NewMessage(MESSAGE_SEND_RED)
 	op := NewOperation(OP_ADDITEM)
-	newItem := common.Item{ID: generateID(common.ITEM_ID_LENGTH), Name: item.Name, Volume: item.Volume}
+	newItem := common.Item{ID: generateID(common.ITEM_ID_LENGTH), Name: item.Name, Volume: item.Volume, Price: item.Price}
 
 	op.Payload, _ = newItem.MarshalBinary()
 	Core.OperationSlice = Core.OperationSlice.AddOperation(op)
