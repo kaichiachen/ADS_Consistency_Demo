@@ -47,7 +47,17 @@ func additem(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	if err != nil {
 		fmt.Println(err)
 	}
+
 	consistency.AddItemToCart(addCartItem)
+
+	resp := common.Response{Succeed: true}
+	jData, err := json.Marshal(resp)
+	if err != nil {
+		panic(err)
+		return
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.Write(jData)
 }
 
 func newitem(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
@@ -57,7 +67,28 @@ func newitem(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	if err != nil {
 		fmt.Println(err)
 	}
+
 	consistency.NewItem(newItem)
+
+	resp := common.Response{Succeed: true}
+	jData, err := json.Marshal(resp)
+	if err != nil {
+		panic(err)
+		return
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.Write(jData)
+}
+
+func removeCartItem(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+	decoder := json.NewDecoder(r.Body)
+	var removeItem common.RemoveCartItem
+	err := decoder.Decode(&removeItem)
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	consistency.RemoveItemFromCart(removeItem)
 
 	resp := common.Response{Succeed: true}
 	jData, err := json.Marshal(resp)
@@ -71,10 +102,28 @@ func newitem(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 
 func clear(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	consistency.ClearShoppingCart()
+
+	resp := common.Response{Succeed: true}
+	jData, err := json.Marshal(resp)
+	if err != nil {
+		panic(err)
+		return
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.Write(jData)
 }
 
 func settle(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	consistency.SettleShoppingCart()
+
+	resp := common.Response{Succeed: true}
+	jData, err := json.Marshal(resp)
+	if err != nil {
+		panic(err)
+		return
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.Write(jData)
 }
 
 func main() {
@@ -88,6 +137,7 @@ func main() {
 	router.GET("/", Index)
 	router.POST("/additem", additem)
 	router.POST("/newitem", newitem)
+	router.POST("/removeitem", removeCartItem)
 	router.POST("/settle", settle)
 	router.POST("/clear", clear)
 	fmt.Println(fmt.Sprintf("localhost:%d", restport))

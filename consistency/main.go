@@ -1,6 +1,6 @@
 package consistency
 
-// import "log"
+import "log"
 
 var Core = struct {
 	*Network
@@ -29,10 +29,8 @@ func HandleIncomingMessage(msg Message) {
 	case MESSAGE_SEND_RED:
 		ops := OperationSlice{}
 		ops.UnMarshalBinary(msg.Data)
+		log.Println("Op sequence len: ", ops.Len())
 		ops.HandleOperations()
-		// op := new(Operation)
-		// op.UnMarshalBinary(msg.Data)
 	case MESSAGE_SEND_TOKEN:
-	case MESSAGE_SEND_REPLY:
 	}
 }

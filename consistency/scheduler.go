@@ -29,19 +29,29 @@ func NewItem(item common.NewItem) chan common.Response {
 
 func AddItemToCart(item common.AddCartItem) chan common.Response {
 	resp := common.NewResponse()
-	op := NewOperation(OP_ADDITEM)
-	Core.OperationSlice.AddOperation(op)
+	op := NewOperation(OP_ADDCART)
+	Core.OperationSlice = Core.OperationSlice.AddOperation(op)
 
 	return resp
 }
 
-func ClearShoppingCart() {
-	mes := NewMessage(MESSAGE_SEND_RED)
-	Core.Network.BroadcastQueue <- *mes
+func RemoveItemFromCart(item common.RemoveCartItem) chan common.Response {
+	resp := common.NewResponse()
+	op := NewOperation(OP_REMOVE)
+	Core.OperationSlice = Core.OperationSlice.AddOperation(op)
+
+	return resp
+}
+
+func ClearShoppingCart() chan common.Response {
+	resp := common.NewResponse()
+	op := NewOperation(OP_CLEAR)
+	Core.OperationSlice = Core.OperationSlice.AddOperation(op)
+
+	return resp
 }
 
 func SettleShoppingCart() {
-	ClearShoppingCart()
 	mes := NewMessage(MESSAGE_SEND_RED)
 	Core.Network.BroadcastQueue <- *mes
 }

@@ -25,12 +25,11 @@ type Network struct {
 	ConnectionCallback NodeChannel
 	BroadcastQueue     chan Message
 	IncomingMessages   chan Message
-	ResponseMessages   chan Message
 }
 
 func SetupNetwork(address string, port int) *Network {
 	n := &Network{}
-	n.BroadcastQueue, n.IncomingMessages, n.ResponseMessages = make(chan Message), make(chan Message), make(chan Message)
+	n.BroadcastQueue, n.IncomingMessages = make(chan Message), make(chan Message)
 	n.ConnectionQueue, n.ConnectionCallback = CreateConnectionQueue()
 	n.Nodes = Nodes{}
 	n.Address = fmt.Sprintf("%s:%d", address, port)

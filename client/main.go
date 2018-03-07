@@ -41,7 +41,7 @@ func main() {
 		switch input {
 		case "1":
 			var jsonStr = []byte(`{"name":"book"}`)
-			resp := request("POST", "/refresh", jsonStr)
+			resp := request("POST", "/newitem", jsonStr)
 			fmt.Println(resp)
 		case "2":
 			var jsonStr = []byte(`{"name":"book"}`)

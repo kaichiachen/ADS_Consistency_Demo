@@ -128,14 +128,31 @@ func (slice *OperationSlice) UnMarshalBinary(d []byte) error {
 
 func (slice *OperationSlice) HandleOperations() {
 	for _, s := range *slice {
-		s.generator()
+		if !s.generator() {
+			log.Println("Generate Fail!")
+			break
+		}
 	}
 }
 
-func (op Operation) generator() {
-	log.Println(op)
+func (op Operation) generator() bool {
+	log.Println(op.Action)
+	switch op.Action {
+	case OP_ADDITEM:
+	case OP_ADDCART:
+	case OP_REMOVE:
+	case OP_CLEAR:
+	case OP_SETTLE:
+	}
+	return true
 }
 
 func (op Operation) shadow() {
-
+	switch op.Action {
+	case OP_ADDITEM:
+	case OP_ADDCART:
+	case OP_REMOVE:
+	case OP_CLEAR:
+	case OP_SETTLE:
+	}
 }

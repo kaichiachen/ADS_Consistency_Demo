@@ -10,6 +10,10 @@ type NewItem struct {
 	Volume uint32
 }
 
+type RemoveCartItem struct {
+	ID string
+}
+
 type Response struct {
 	Succeed bool
 	Msg     interface{}
