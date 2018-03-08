@@ -26,6 +26,10 @@ func main() {
 
 	log.SetFlags(log.LstdFlags | log.Lshortfile)
 	url = fmt.Sprintf("http://localhost:%d", port)
+
+	initData()
+	//TestForClientData()
+
 	fmt.Println("欢迎光临线上购物书城")
 	for {
 		fmt.Println()
