@@ -113,10 +113,34 @@ func clear(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	w.Write(jData)
 }
 
-func settle(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
-	consistency.SettleShoppingCart()
+func checkout(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+	consistency.CheckoutShoppingCart()
 
 	resp := common.Response{Succeed: true}
+	jData, err := json.Marshal(resp)
+	if err != nil {
+		panic(err)
+		return
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.Write(jData)
+}
+
+func items(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+	resp := common.Response{Succeed: true}
+	resp.Msg = consistency.GetClientItemIDMap()
+	jData, err := json.Marshal(resp)
+	if err != nil {
+		panic(err)
+		return
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.Write(jData)
+}
+
+func mycarts(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+	resp := common.Response{Succeed: true}
+	resp.Msg = consistency.GetItemIDMapFromCart()
 	jData, err := json.Marshal(resp)
 	if err != nil {
 		panic(err)
@@ -138,8 +162,10 @@ func main() {
 	router.POST("/additem", additem)
 	router.POST("/newitem", newitem)
 	router.POST("/removeitem", removeCartItem)
-	router.POST("/settle", settle)
+	router.POST("/checkout", checkout)
 	router.POST("/clear", clear)
+	router.GET("/mycarts", mycarts)
+	router.GET("/items", items)
 	fmt.Println(fmt.Sprintf("localhost:%d", restport))
 	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%d", restport), router))
 }

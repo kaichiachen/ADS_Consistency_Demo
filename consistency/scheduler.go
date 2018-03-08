@@ -11,8 +11,9 @@ func NewItem(item common.NewItem) chan common.Response {
 	mes := NewMessage(MESSAGE_SEND_RED)
 	op := NewOperation(OP_ADDITEM)
 	newItem := common.Item{ID: generateID(common.ITEM_ID_LENGTH), Name: item.Name, Volume: item.Volume, Price: item.Price}
-
 	op.Payload, _ = newItem.MarshalBinary()
+
+	op.generator()
 	Core.OperationSlice = Core.OperationSlice.AddOperation(op)
 
 	data, err := Core.OperationSlice.MarshalBinary()
@@ -27,9 +28,13 @@ func NewItem(item common.NewItem) chan common.Response {
 	return resp
 }
 
-func AddItemToCart(item common.AddCartItem) chan common.Response {
+func AddItemToCart(addeditem common.AddCartItem) chan common.Response {
 	resp := common.NewResponse()
 	op := NewOperation(OP_ADDCART)
+	item := common.Item{ItemIDMap[addeditem.ID].Name, uint32(addeditem.Volume), addeditem.ID, ItemIDMap[addeditem.ID].Price}
+	op.Payload, _ = item.MarshalBinary()
+
+	op.generator()
 	Core.OperationSlice = Core.OperationSlice.AddOperation(op)
 
 	return resp
@@ -38,6 +43,8 @@ func AddItemToCart(item common.AddCartItem) chan common.Response {
 func RemoveItemFromCart(item common.RemoveCartItem) chan common.Response {
 	resp := common.NewResponse()
 	op := NewOperation(OP_REMOVE)
+
+	op.generator()
 	Core.OperationSlice = Core.OperationSlice.AddOperation(op)
 
 	return resp
@@ -46,12 +53,14 @@ func RemoveItemFromCart(item common.RemoveCartItem) chan common.Response {
 func ClearShoppingCart() chan common.Response {
 	resp := common.NewResponse()
 	op := NewOperation(OP_CLEAR)
+
+	op.generator()
 	Core.OperationSlice = Core.OperationSlice.AddOperation(op)
 
 	return resp
 }
 
-func SettleShoppingCart() {
+func CheckoutShoppingCart() {
 	mes := NewMessage(MESSAGE_SEND_RED)
 	Core.Network.BroadcastQueue <- *mes
 }

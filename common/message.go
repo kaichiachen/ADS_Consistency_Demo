@@ -1,23 +1,23 @@
 package common
 
 type AddCartItem struct {
-	Name   string
-	Volume int
+	ID     string `json:"id"`
+	Volume int    `json:"volume"`
 }
 
 type NewItem struct {
-	Name   string
-	Volume uint32
-	Price  uint32
+	Name   string `json:"name"`
+	Volume uint32 `json:"volume"`
+	Price  uint32 `json:"price"`
 }
 
 type RemoveCartItem struct {
-	ID string
+	ID string `json:"id"`
 }
 
 type Response struct {
-	Succeed bool
-	Msg     interface{}
+	Succeed bool        `json:"succeed"`
+	Msg     interface{} `json:"msg"`
 }
 
 func NewResponse() chan Response {

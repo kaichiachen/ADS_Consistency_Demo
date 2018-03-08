@@ -11,10 +11,17 @@ const (
 )
 
 type Item struct {
-	Name   string
-	Volume uint32
-	ID     string
-	Price  uint32
+	Name   string `json:"name"`
+	Volume uint32 `json:"volume"`
+	ID     string `json:"id"`
+	Price  uint32 `json:"price"`
+}
+
+type CartItem struct {
+	Name   string `json:"name"`
+	Volume uint32 `json:"volume"`
+	ID     string `json:"id"`
+	Price  uint32 `json:"price"`
 }
 
 func (item *Item) MarshalBinary() ([]byte, error) {

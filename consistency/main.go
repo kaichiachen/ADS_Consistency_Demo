@@ -8,6 +8,7 @@ var Core = struct {
 }{}
 
 func Start(address string, port int, nodes []string) {
+	initData()
 	Core.Network = SetupNetwork(address, port)
 	go Core.Network.Run()
 	for _, n := range nodes {

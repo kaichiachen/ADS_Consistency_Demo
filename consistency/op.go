@@ -2,6 +2,7 @@ package consistency
 
 import (
 	"bytes"
+	"common"
 	"encoding/binary"
 	"log"
 	"math"
@@ -139,7 +140,9 @@ func (op Operation) generator() bool {
 	log.Println(op.Action)
 	switch op.Action {
 	case OP_ADDITEM:
+		op.shadow()
 	case OP_ADDCART:
+		op.shadow()
 	case OP_REMOVE:
 	case OP_CLEAR:
 	case OP_SETTLE:
@@ -150,7 +153,13 @@ func (op Operation) generator() bool {
 func (op Operation) shadow() {
 	switch op.Action {
 	case OP_ADDITEM:
+		newItem := common.Item{}
+		newItem.UnMarshalBinary(op.Payload)
+		AddNewItem(newItem)
 	case OP_ADDCART:
+		item := common.Item{}
+		item.UnMarshalBinary(op.Payload)
+		AddItemToCartForClient(item.ID, item.Volume)
 	case OP_REMOVE:
 	case OP_CLEAR:
 	case OP_SETTLE:
