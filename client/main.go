@@ -40,21 +40,33 @@ func main() {
 		input := <-readStdin()
 		switch input {
 		case "1":
-			var jsonStr = []byte(`{"name":"book"}`)
+			// name(string),volume(int)
+			var jsonStr = []byte(`{"name":"book","volume":10}`)
 			resp := request("POST", "/newitem", jsonStr)
 			fmt.Println(resp)
 		case "2":
-			var jsonStr = []byte(`{"name":"book"}`)
+			// id(string(10)),volume(int)
+			var jsonStr = []byte(`{"id":"l3k4l1n3x1m3", "volume":10}`)
 			resp := request("POST", "/additem", jsonStr)
 			fmt.Println(resp)
 		case "3":
-			fmt.Println("你想移除哪项商品商品?")
+			// id(string(10))
+			fmt.Println("你想移除哪项商品商品?") //
 			input := <-readStdin()
 			fmt.Println(input)
+			var jsonStr = []byte(`{"id":"l3k4l1n3x1m3"`)
+			resp := request("POST", "/removeitem", jsonStr)
+			fmt.Println(resp)
 		case "4":
-			// store.ClearShoppingCart()
+			// id(string,volume(string)
+			var jsonStr = []byte(`{"id":"l3k4l1n3x1m3,34dsd214dsd,23fsdfd123", "volume":"2,3,1"}`)
+			resp := request("POST", "/clear", jsonStr)
+			fmt.Println(resp)
 		case "5":
-			// store.SettleShoppingCart()
+			// id(string,volume(string)
+			var jsonStr = []byte(`{"id":"l3k4l1n3x1m3,34dsd214dsd,23fsdfd123", "volume":"2,3,1"}`)
+			resp := request("POST", "/settle", jsonStr)
+			fmt.Println(resp)
 		default:
 			break
 		}
