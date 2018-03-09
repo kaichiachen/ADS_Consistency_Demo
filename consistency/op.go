@@ -138,30 +138,46 @@ func (slice *OperationSlice) HandleOperations() {
 
 func (op Operation) generator() bool {
 	log.Println(op.Action)
+
+	OpResult := 0
 	switch op.Action {
 	case OP_ADDITEM:
-		op.shadow()
+		OpResult = op.shadow()
 	case OP_ADDCART:
-		op.shadow()
+		OpResult = op.shadow()
 	case OP_REMOVE:
+		OpResult = op.shadow()
 	case OP_CLEAR:
+		OpResult = op.shadow()
 	case OP_SETTLE:
+		return true
 	}
-	return true
+	if OpResult == OPERATION_SUCCESS {
+		return true
+	} else {
+		return false
+	}
 }
 
-func (op Operation) shadow() {
+func (op Operation) shadow() int {
+	OpResult := 0
 	switch op.Action {
 	case OP_ADDITEM:
 		newItem := common.Item{}
 		newItem.UnMarshalBinary(op.Payload)
-		AddNewItem(newItem)
+		OpResult = AddNewItem(newItem)
 	case OP_ADDCART:
 		item := common.Item{}
 		item.UnMarshalBinary(op.Payload)
-		AddItemToCartForClient(item.ID, item.Volume)
+		OpResult = AddItemToCartForClient(item.ID, item.Volume)
 	case OP_REMOVE:
+		item := common.Item{}
+		item.UnMarshalBinary(op.Payload)
+		OpResult = RemoveItemFromCartForClient(item.ID, item.Volume)
 	case OP_CLEAR:
+		OpResult = ClearCartForServer()
 	case OP_SETTLE:
 	}
+
+	return OpResult
 }

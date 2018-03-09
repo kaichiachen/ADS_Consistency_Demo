@@ -12,7 +12,8 @@ type NewItem struct {
 }
 
 type RemoveCartItem struct {
-	ID string `json:"id"`
+	ID     string `json:"id"`
+	Volume int    `json:"volume"`
 }
 
 type Response struct {
