@@ -6,9 +6,10 @@ import (
 	"math/rand"
 )
 
+var needBroadcast = false
+
 func NewItem(item common.NewItem) chan common.Response {
 	resp := common.NewResponse()
-	mes := NewMessage(MESSAGE_SEND_RED)
 	op := NewOperation(OP_ADDITEM)
 	newItem := common.Item{ID: generateID(common.ITEM_ID_LENGTH), Name: item.Name, Volume: item.Volume, Price: item.Price}
 	op.Payload, _ = newItem.MarshalBinary()
@@ -16,14 +17,11 @@ func NewItem(item common.NewItem) chan common.Response {
 	op.generator()
 	Core.OperationSlice = Core.OperationSlice.AddOperation(op)
 
-	data, err := Core.OperationSlice.MarshalBinary()
-	if err != nil {
-		log.Println(err)
+	if hasToken {
+		broadcastOperations()
+	} else {
+		needBroadcast = true
 	}
-
-	mes.Data = data
-	Core.OperationSlice.ClearOperation()
-	Core.Network.BroadcastQueue <- *mes
 
 	return resp
 }
@@ -63,6 +61,18 @@ func ClearShoppingCart() chan common.Response {
 func CheckoutShoppingCart() {
 	mes := NewMessage(MESSAGE_SEND_RED)
 	Core.Network.BroadcastQueue <- *mes
+}
+
+func broadcastOperations() {
+	mes := NewMessage(MESSAGE_SEND_RED)
+	data, err := Core.OperationSlice.MarshalBinary()
+	if err != nil {
+		log.Println(err)
+	}
+	mes.Data = data
+	Core.OperationSlice.ClearOperation()
+	Core.Network.BroadcastQueue <- *mes
+	needBroadcast = false
 }
 
 func generateID(n int) string {

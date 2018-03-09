@@ -22,6 +22,7 @@ type Network struct {
 	Nodes
 	ConnectionQueue
 	Address            string
+	Port               int
 	ConnectionCallback NodeChannel
 	BroadcastQueue     chan Message
 	IncomingMessages   chan Message
@@ -33,6 +34,7 @@ func SetupNetwork(address string, port int) *Network {
 	n.ConnectionQueue, n.ConnectionCallback = CreateConnectionQueue()
 	n.Nodes = Nodes{}
 	n.Address = fmt.Sprintf("%s:%d", address, port)
+	n.Port = port
 	return n
 }
 
@@ -206,6 +208,27 @@ func (n *Network) BroadcastMessage(message Message) {
 			}()
 		}
 	}
+}
+
+func (n *Network) SendMessage(message Message, sendPort int) bool {
+	b, _ := message.MarshalBinary()
+	send := false
+	for k, node := range n.Nodes {
+		p := k[len(findIPAddress(k))+1:]
+		port, _ := strconv.Atoi(p)
+		if port == sendPort {
+			// fmt.Println("Send Token...", k)
+			go func() {
+				_, err := node.TCPConn.Write(b)
+				if err != nil {
+					fmt.Println("Error broadcast to", node.TCPConn.RemoteAddr())
+				}
+			}()
+			send = true
+			break
+		}
+	}
+	return send
 }
 
 func findIPAddress(input string) string {

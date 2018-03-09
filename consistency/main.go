@@ -1,6 +1,8 @@
 package consistency
 
-import "log"
+import (
+	"log"
+)
 
 var Core = struct {
 	*Network
@@ -11,6 +13,10 @@ func Start(address string, port int, nodes []string) {
 	initData()
 	Core.Network = SetupNetwork(address, port)
 	go Core.Network.Run()
+	if port == SERVER_PORTS[0] {
+		hasToken = true
+		go sendToken()
+	}
 	for _, n := range nodes {
 		Core.Network.ConnectionQueue <- n
 	}
@@ -33,5 +39,7 @@ func HandleIncomingMessage(msg Message) {
 		log.Println("Op sequence len: ", ops.Len())
 		ops.HandleOperations()
 	case MESSAGE_SEND_TOKEN:
+		log.Println("Receieve token")
+		go sendToken()
 	}
 }
