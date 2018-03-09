@@ -41,53 +41,54 @@ func GetItemIDMapFromCart() []common.CartItem {
 	return items
 }
 
-func AddItemToCartForClient(itemid string, num uint32) {
-	//TODO: Recieve
+func AddItemToCartForClient(itemid string, num uint32) int {
 	if item, exist := ItemIDMap[itemid]; exist {
 		if count, ok := cart.content[itemid]; ok {
 			cart.content[itemid] = count + num
 		} else {
 			cart.content[itemid] = num
 		}
-		fmt.Printf("add %d <%s> successfully, now you have %d\n", num, item.Name, cart.content[itemid])
+		fmt.Printf("add %d <%s> successfully, now %d in cart\n", num, item.Name, cart.content[itemid])
+		return OPERATION_SUCCESS
 	} else {
 		fmt.Printf("no such item\n")
+		return OPERATION_FAIL
 	}
-	//TODO: send confirm
 }
 
-func RemoveItemFromCartForClient(itemid string, num uint32) {
-	//TODO: Recieve
+func RemoveItemFromCartForClient(itemid string, num uint32) int {
 	if item, exist := ItemIDMap[itemid]; exist {
 		if count, ok := cart.content[itemid]; ok {
 			if count >= num {
 				cart.content[itemid] = count - num
-				fmt.Printf("remove %d <%s> successfully, now you have %d\n", num, item.Name, cart.content[itemid])
+				fmt.Printf("remove %d <%s> successfully, now %d in cart\n", num, item.Name, cart.content[itemid])
 				if count == num {
 					delete(cart.content, itemid)
 				}
+				return OPERATION_SUCCESS
+
 			} else {
 				fmt.Printf("You have %d <%s> but want remove %d. Nothing happens.\n", cart.content[itemid], item.Name, num)
 			}
 		} else {
-			fmt.Printf("You do not have such item in your cart.\n")
+			fmt.Printf("No such item in your cart.\n")
 		}
 	} else {
 		fmt.Printf("no such item\n")
 	}
-	//TODO: send confirm
+	return OPERATION_FAIL
 }
 
-func ClearCartForServer() error {
+func ClearCartForServer() int {
 	//TODO: Recieve
 	ClearContent := make(map[string]uint32)
 	cart.content = ClearContent
 	fmt.Printf("Now you have nothing in your cart\n")
-	return nil
+	return OPERATION_SUCCESS
 	//TODO: send confirm
 }
 
-func checkoutForServer() {
+func CheckoutForServer() int {
 	//TODO: recieve a req
 
 	success := 1
@@ -112,8 +113,11 @@ func checkoutForServer() {
 		//TODO:send not enough
 	}
 
+	return success
+
 }
 
-func AddNewItem(item common.Item) {
+func AddNewItem(item common.Item) int {
 	ItemIDMap[item.ID] = item
+	return OPERATION_SUCCESS
 }

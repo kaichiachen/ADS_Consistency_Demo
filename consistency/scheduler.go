@@ -26,36 +26,38 @@ func NewItem(item common.NewItem) chan common.Response {
 	return resp
 }
 
-func AddItemToCart(addeditem common.AddCartItem) chan common.Response {
+func AddItemToCart(addeditem common.AddCartItem) (chan common.Response, bool) {
 	resp := common.NewResponse()
 	op := NewOperation(OP_ADDCART)
 	item := common.Item{ItemIDMap[addeditem.ID].Name, uint32(addeditem.Volume), addeditem.ID, ItemIDMap[addeditem.ID].Price}
 	op.Payload, _ = item.MarshalBinary()
 
-	op.generator()
+	OpResult := op.generator()
 	Core.OperationSlice = Core.OperationSlice.AddOperation(op)
 
-	return resp
+	return resp, OpResult
 }
 
-func RemoveItemFromCart(item common.RemoveCartItem) chan common.Response {
+func RemoveItemFromCart(rmitem common.RemoveCartItem) (chan common.Response, bool) {
 	resp := common.NewResponse()
 	op := NewOperation(OP_REMOVE)
+	item := common.Item{ItemIDMap[rmitem.ID].Name, uint32(rmitem.Volume), rmitem.ID, ItemIDMap[rmitem.ID].Price}
+	op.Payload, _ = item.MarshalBinary()
 
-	op.generator()
+	OpResult := op.generator()
 	Core.OperationSlice = Core.OperationSlice.AddOperation(op)
 
-	return resp
+	return resp, OpResult
 }
 
-func ClearShoppingCart() chan common.Response {
+func ClearShoppingCart() (chan common.Response, bool) {
 	resp := common.NewResponse()
 	op := NewOperation(OP_CLEAR)
 
-	op.generator()
+	OpResult := op.generator()
 	Core.OperationSlice = Core.OperationSlice.AddOperation(op)
 
-	return resp
+	return resp, OpResult
 }
 
 func CheckoutShoppingCart() {

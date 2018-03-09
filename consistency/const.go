@@ -17,3 +17,8 @@ const (
 	MESSAGE_SEND_RED = iota + 20
 	MESSAGE_SEND_TOKEN
 )
+
+const (
+	OPERATION_SUCCESS = iota + 1
+	OPERATION_FAIL
+)

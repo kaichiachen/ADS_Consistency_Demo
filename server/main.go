@@ -48,9 +48,13 @@ func additem(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 		fmt.Println(err)
 	}
 
-	consistency.AddItemToCart(addCartItem)
+	_, OpResult := consistency.AddItemToCart(addCartItem)
 
 	resp := common.Response{Succeed: true}
+	if !OpResult {
+		resp = common.Response{Succeed: false}
+	}
+
 	jData, err := json.Marshal(resp)
 	if err != nil {
 		panic(err)
@@ -88,9 +92,13 @@ func removeCartItem(w http.ResponseWriter, r *http.Request, ps httprouter.Params
 		fmt.Println(err)
 	}
 
-	consistency.RemoveItemFromCart(removeItem)
+	_, OpResult := consistency.RemoveItemFromCart(removeItem)
 
 	resp := common.Response{Succeed: true}
+	if !OpResult {
+		resp = common.Response{Succeed: false}
+	}
+
 	jData, err := json.Marshal(resp)
 	if err != nil {
 		panic(err)
@@ -101,9 +109,13 @@ func removeCartItem(w http.ResponseWriter, r *http.Request, ps httprouter.Params
 }
 
 func clear(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
-	consistency.ClearShoppingCart()
+	_, OpResult := consistency.ClearShoppingCart()
 
 	resp := common.Response{Succeed: true}
+	if !OpResult {
+		resp = common.Response{Succeed: false}
+	}
+
 	jData, err := json.Marshal(resp)
 	if err != nil {
 		panic(err)
@@ -117,6 +129,12 @@ func checkout(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	consistency.CheckoutShoppingCart()
 
 	resp := common.Response{Succeed: true}
+
+	checkoutSuccess := consistency.CheckoutForServer()
+	if 0 == checkoutSuccess {
+		resp = common.Response{Succeed: false}
+	}
+
 	jData, err := json.Marshal(resp)
 	if err != nil {
 		panic(err)
