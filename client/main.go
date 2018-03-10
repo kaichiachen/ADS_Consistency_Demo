@@ -103,7 +103,7 @@ func printCartList() []common.Item {
 		fmt.Print(". ", item.Name, " - ")
 		fmt.Print(item.Volume)
 		fmt.Print(" X ")
-		fmt.Println(item.Price, "=", item.Volume*item.Price, "元")
+		fmt.Println(item.Price, "元 =", item.Volume*item.Price, "元")
 		sum += int(item.Volume * item.Price)
 	}
 	fmt.Println("总共: ", sum, "元")

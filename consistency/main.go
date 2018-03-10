@@ -39,7 +39,7 @@ func HandleIncomingMessage(msg Message) {
 		log.Println("Op sequence len: ", ops.Len())
 		ops.HandleOperations()
 	case MESSAGE_SEND_TOKEN:
-		log.Println("Receieve token")
+		// log.Println("Receieve token")
 		go sendToken()
 	}
 }

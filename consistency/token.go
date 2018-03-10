@@ -1,11 +1,11 @@
 package consistency
 
 import (
-	//"log"
+	// "log"
 	"time"
 )
 
-var SERVER_PORTS = []int{20000, 20001, 20002}
+var SERVER_PORTS = []int{20000, 20001}
 
 var hasToken = false
 

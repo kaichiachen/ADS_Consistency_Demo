@@ -72,7 +72,7 @@ func broadcastOperations() {
 		log.Println(err)
 	}
 	mes.Data = data
-	Core.OperationSlice.ClearOperation()
+	Core.OperationSlice = Core.OperationSlice.ClearOperation()
 	Core.Network.BroadcastQueue <- *mes
 	needBroadcast = false
 }

@@ -87,7 +87,7 @@ func (n Nodes) AddNode(node *Node) bool {
 	addr := fmt.Sprintf("%s:%d", ip, port)
 
 	if addr != Core.Network.Address && n[addr] == nil {
-		log.Println("Node connected ", addr)
+		// log.Println("Node connected ", addr)
 		n[addr] = node
 
 		go HandleNode(node)
@@ -149,7 +149,6 @@ func CreateConnectionQueue() (ConnectionQueue, NodeChannel) {
 
 		for {
 			address := <-in
-			log.Println(address)
 			if address != Core.Network.Address && Core.Nodes[address] == nil {
 				log.Printf("Connecting to node: %s\n", address)
 				go ConnectToNode(address, 5*time.Second, true, out)
@@ -177,6 +176,7 @@ loop:
 			con, err = net.DialTCP("tcp", nil, addrDst)
 
 			if con != nil {
+				log.Println("Node connected ", addrDst.String())
 				cb <- &Node{con, int(time.Now().Unix()), true}
 				breakChannel <- true
 			}

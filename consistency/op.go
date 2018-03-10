@@ -26,7 +26,7 @@ func (op *Operation) SetOPType() {
 		op.Optype = RED
 	case OP_CLEAR:
 		op.Optype = RED
-	case OP_SETTLE:
+	case OP_CHECKOUT:
 		op.Optype = RED
 	}
 }
@@ -49,10 +49,10 @@ func (op *Operation) MarshalBinary() ([]byte, error) {
 	case OP_ADDCART:
 		bs.Write(op.Payload)
 	case OP_REMOVE:
-
+		bs.Write(op.Payload)
 	case OP_CLEAR:
-
-	case OP_SETTLE:
+		bs.Write(op.Payload)
+	case OP_CHECKOUT:
 
 	}
 	return bs.Bytes(), nil
@@ -69,10 +69,10 @@ func (op *Operation) UnMarshalBinary(d []byte) []byte {
 	case OP_ADDCART:
 		op.Payload = bs.Next(int(op.PayloadLength))
 	case OP_REMOVE:
-
+		op.Payload = bs.Next(int(op.PayloadLength))
 	case OP_CLEAR:
-
-	case OP_SETTLE:
+		op.Payload = bs.Next(int(op.PayloadLength))
+	case OP_CHECKOUT:
 
 	}
 
@@ -137,8 +137,6 @@ func (slice *OperationSlice) HandleOperations() {
 }
 
 func (op Operation) generator() bool {
-	log.Println(op.Action)
-
 	OpResult := 0
 	switch op.Action {
 	case OP_ADDITEM:
@@ -149,7 +147,7 @@ func (op Operation) generator() bool {
 		OpResult = op.shadow()
 	case OP_CLEAR:
 		OpResult = op.shadow()
-	case OP_SETTLE:
+	case OP_CHECKOUT:
 		return true
 	}
 	if OpResult == OPERATION_SUCCESS {
@@ -176,7 +174,7 @@ func (op Operation) shadow() int {
 		OpResult = RemoveItemFromCartForClient(item.ID, item.Volume)
 	case OP_CLEAR:
 		OpResult = ClearCartForServer()
-	case OP_SETTLE:
+	case OP_CHECKOUT:
 	}
 
 	return OpResult

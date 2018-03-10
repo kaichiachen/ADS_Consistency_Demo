@@ -10,7 +10,7 @@ const (
 	OP_ADDCART
 	OP_REMOVE
 	OP_CLEAR
-	OP_SETTLE
+	OP_CHECKOUT
 )
 
 const (
