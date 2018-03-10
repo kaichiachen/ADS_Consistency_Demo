@@ -194,7 +194,6 @@ loop:
 }
 
 func (n *Network) BroadcastMessage(message Message) {
-	time.Sleep(100 * time.Millisecond)
 	b, _ := message.MarshalBinary()
 	for k, node := range n.Nodes {
 		p := k[len(findIPAddress(k))+1:]

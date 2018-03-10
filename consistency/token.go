@@ -10,9 +10,6 @@ var SERVER_PORTS = []int{20000, 20001}
 var hasToken = false
 
 func sendToken() {
-	if needBroadcast {
-		broadcastOperations()
-	}
 	hasToken = true
 	msg := NewMessage(MESSAGE_SEND_TOKEN)
 	next_port := 0
@@ -31,6 +28,14 @@ loop:
 		case <-time.NewTimer(1 * time.Second).C:
 			if Core.Network.SendMessage(*msg, next_port) {
 				hasToken = false
+			L:
+				for {
+					select {
+					case <-Core.tokens:
+					default:
+						break L
+					}
+				}
 				break loop
 			} else {
 				// log.Println("Resend Token...")

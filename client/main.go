@@ -11,6 +11,7 @@ import (
 	"net/http"
 	"os"
 	"strconv"
+	"time"
 )
 
 var port int
@@ -62,13 +63,24 @@ func main() {
 	}
 }
 
-func request(method, api string, j []byte) *http.Response {
+func request(method, api string, j []byte, benchmark bool) *http.Response {
+	var start time.Time
+	if benchmark {
+		start = time.Now()
+	}
 	req, err := http.NewRequest(method, url+api, bytes.NewBuffer(j))
 	req.Header.Set("Content-Type", "application/json")
 	client := &http.Client{}
 	resp, err := client.Do(req)
 	if err != nil {
 		panic(err)
+	}
+	if benchmark {
+		elapsed := time.Since(start)
+		fmt.Println()
+		fmt.Printf("%c[%d;%d;%dm%s耗时: %s%c[0m ", 0x1B, 0, 40, 31, "", elapsed, 0x1B)
+		fmt.Println()
+		fmt.Println()
 	}
 	return resp
 }
@@ -86,7 +98,7 @@ func readStdin() chan string {
 
 func printCartList() []common.Item {
 	cartList := []common.Item{}
-	resp := request("GET", "/mycarts", []byte{})
+	resp := request("GET", "/mycarts", []byte{}, false)
 	decoder := json.NewDecoder(resp.Body)
 	var response common.Response
 	err := decoder.Decode(&response)
@@ -122,7 +134,9 @@ func AddItemOption() {
 	volume, _ := strconv.Atoi(input)
 
 	jsonStr := fmt.Sprintf(`{"name":"%s","price":%d ,"volume":%d}`, name, price, volume)
-	resp := request("POST", "/newitem", []byte(jsonStr))
+
+	resp := request("POST", "/newitem", []byte(jsonStr), true)
+
 	decoder := json.NewDecoder(resp.Body)
 	var response common.Response
 	err := decoder.Decode(&response)
@@ -138,7 +152,7 @@ func AddItemOption() {
 }
 
 func ReadItemListOption() {
-	resp := request("GET", "/items", []byte{})
+	resp := request("GET", "/items", []byte{}, false)
 	decoder := json.NewDecoder(resp.Body)
 	var response common.Response
 	err := decoder.Decode(&response)
@@ -170,7 +184,6 @@ func ReadItemListOption() {
 		input = <-readStdin()
 		index, _ = strconv.Atoi(input)
 	}
-	//input := <-readStdin()
 
 	num := -1
 	for uint32(num) > items[index-1].Volume || num == -1 {
@@ -180,7 +193,7 @@ func ReadItemListOption() {
 	}
 
 	jsonStr := fmt.Sprintf(`{"id":"%s", "volume":%d}`, items[index-1].ID, num)
-	resp = request("POST", "/additem", []byte(jsonStr))
+	resp = request("POST", "/additem", []byte(jsonStr), true)
 	decoder = json.NewDecoder(resp.Body)
 	err = decoder.Decode(&response)
 	if err != nil {
@@ -221,7 +234,7 @@ func RmItemOption() {
 	//var jsonStr = []byte(`{"id":"l3k4l1n3x1m3"}`)
 
 	var response common.Response
-	resp := request("POST", "/removeitem", []byte(jsonStr))
+	resp := request("POST", "/removeitem", []byte(jsonStr), true)
 	decoder := json.NewDecoder(resp.Body)
 	err := decoder.Decode(&response)
 	if err != nil {
@@ -238,7 +251,7 @@ func RmItemOption() {
 func ClearCartOption() {
 	// id(string,volume(string)
 	//var jsonStr = []byte(`{"id":"l3k4l1n3x1m3,34dsd214dsd,23fsdfd123", "volume":"2,3,1"}`)
-	resp := request("POST", "/clear", []byte{})
+	resp := request("POST", "/clear", []byte{}, true)
 
 	var response common.Response
 	decoder := json.NewDecoder(resp.Body)
@@ -261,7 +274,7 @@ func CheckoutOption() {
 
 	fmt.Println("\n您打算购买:")
 	printCartList()
-	resp := request("POST", "/checkout", []byte{})
+	resp := request("POST", "/checkout", []byte{}, true)
 
 	var response common.Response
 	decoder := json.NewDecoder(resp.Body)

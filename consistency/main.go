@@ -7,10 +7,12 @@ import (
 var Core = struct {
 	*Network
 	OperationSlice
+	tokens chan string
 }{}
 
 func Start(address string, port int, nodes []string) {
 	initData()
+	Core.tokens = make(chan string, 10)
 	Core.Network = SetupNetwork(address, port)
 	go Core.Network.Run()
 	if port == SERVER_PORTS[0] {
@@ -40,6 +42,9 @@ func HandleIncomingMessage(msg Message) {
 		ops.HandleOperations()
 	case MESSAGE_SEND_TOKEN:
 		// log.Println("Receieve token")
+		for i := 0; i < 10; i++ {
+			Core.tokens <- ""
+		}
 		go sendToken()
 	}
 }

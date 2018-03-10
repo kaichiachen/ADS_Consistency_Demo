@@ -47,14 +47,7 @@ func additem(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	if err != nil {
 		fmt.Println(err)
 	}
-
-	_, OpResult := consistency.AddItemToCart(addCartItem)
-
-	resp := common.Response{Succeed: true}
-	if !OpResult {
-		resp = common.Response{Succeed: false}
-	}
-
+	resp := <-consistency.AddItemToCart(addCartItem)
 	jData, err := json.Marshal(resp)
 	if err != nil {
 		panic(err)
@@ -72,12 +65,7 @@ func newitem(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 		fmt.Println(err)
 	}
 
-	_, OpResult := consistency.NewItem(newItem)
-
-	resp := common.Response{Succeed: true}
-	if !OpResult {
-		resp = common.Response{Succeed: false}
-	}
+	resp := <-consistency.NewItem(newItem)
 	jData, err := json.Marshal(resp)
 	if err != nil {
 		panic(err)
@@ -95,13 +83,7 @@ func removeCartItem(w http.ResponseWriter, r *http.Request, ps httprouter.Params
 		fmt.Println(err)
 	}
 
-	_, OpResult := consistency.RemoveItemFromCart(removeItem)
-
-	resp := common.Response{Succeed: true}
-	if !OpResult {
-		resp = common.Response{Succeed: false}
-	}
-
+	resp := <-consistency.RemoveItemFromCart(removeItem)
 	jData, err := json.Marshal(resp)
 	if err != nil {
 		panic(err)
@@ -112,13 +94,8 @@ func removeCartItem(w http.ResponseWriter, r *http.Request, ps httprouter.Params
 }
 
 func clear(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
-	_, OpResult := consistency.ClearShoppingCart()
 
-	resp := common.Response{Succeed: true}
-	if !OpResult {
-		resp = common.Response{Succeed: false}
-	}
-
+	resp := <-consistency.ClearShoppingCart()
 	jData, err := json.Marshal(resp)
 	if err != nil {
 		panic(err)
@@ -129,13 +106,8 @@ func clear(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 }
 
 func checkout(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
-	_, OpResult := consistency.CheckoutShoppingCart()
 
-	resp := common.Response{Succeed: true}
-	if !OpResult {
-		resp = common.Response{Succeed: false}
-	}
-
+	resp := <-consistency.CheckoutShoppingCart()
 	jData, err := json.Marshal(resp)
 	if err != nil {
 		panic(err)
