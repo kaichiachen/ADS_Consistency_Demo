@@ -3,7 +3,6 @@ package main
 import (
 	"fmt"
 
-	//"github.com/garyburd/redigo/redis"
 	"github.com/stvp/tempredis"
 )
 
