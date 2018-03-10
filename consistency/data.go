@@ -41,7 +41,7 @@ func GetItemIDMapFromCart() []common.CartItem {
 	return items
 }
 
-func AddItemToCartForClient(itemid string, num uint32) int {
+func AddItemToCartForClient(itemid string, num uint32) OP_RESULT {
 	if item, exist := ItemIDMap[itemid]; exist {
 		if count, ok := cart.content[itemid]; ok {
 			cart.content[itemid] = count + num
@@ -56,7 +56,7 @@ func AddItemToCartForClient(itemid string, num uint32) int {
 	}
 }
 
-func RemoveItemFromCartForClient(itemid string, num uint32) int {
+func RemoveItemFromCartForClient(itemid string, num uint32) OP_RESULT {
 	if item, exist := ItemIDMap[itemid]; exist {
 		if count, ok := cart.content[itemid]; ok {
 			if count >= num {
@@ -79,7 +79,7 @@ func RemoveItemFromCartForClient(itemid string, num uint32) int {
 	return OPERATION_FAIL
 }
 
-func ClearCartForServer() int {
+func ClearCartForServer() OP_RESULT {
 	//TODO: Recieve
 	ClearContent := make(map[string]uint32)
 	cart.content = ClearContent
@@ -88,36 +88,31 @@ func ClearCartForServer() int {
 	//TODO: send confirm
 }
 
-func CheckoutForServer() int {
-	//TODO: recieve a req
-
-	success := 1
-
+func CheckItemVolume() OP_RESULT {
 	for itemid, count := range cart.content {
 		if ItemIDMap[itemid].Volume < count {
-			success = 0
-			break
+			return false
 		}
 	}
+	return true
+}
 
-	if success == 1 { // I think only this is a red operation
-		for itemid, count := range cart.content {
-			tempitem := ItemIDMap[itemid]
-			tempitem.Volume -= count
-			ItemIDMap[itemid] = tempitem
-		}
-		ClearContent := make(map[string]uint32)
-		cart.content = ClearContent
-		//TODO:send OK
-	} else {
-		//TODO:send not enough
+func CheckoutForServer() OP_RESULT {
+	//TODO: recieve a req
+
+	for itemid, count := range cart.content {
+		tempitem := ItemIDMap[itemid]
+		tempitem.Volume -= count
+		ItemIDMap[itemid] = tempitem
 	}
+	ClearContent := make(map[string]uint32)
+	cart.content = ClearContent
 
-	return success
+	return OPERATION_SUCCESS
 
 }
 
-func AddNewItem(item common.Item) int {
+func AddNewItem(item common.Item) OP_RESULT {
 	ItemIDMap[item.ID] = item
 	return OPERATION_SUCCESS
 }

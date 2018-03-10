@@ -8,61 +8,58 @@ import (
 
 var needBroadcast = false
 
-func NewItem(item common.NewItem) chan common.Response {
+func NewItem(item common.NewItem) (chan common.Response, OP_RESULT) {
 	resp := common.NewResponse()
 	op := NewOperation(OP_ADDITEM)
 	newItem := common.Item{ID: generateID(common.ITEM_ID_LENGTH), Name: item.Name, Volume: item.Volume, Price: item.Price}
 	op.Payload, _ = newItem.MarshalBinary()
 
-	op.generator()
-	Core.OperationSlice = Core.OperationSlice.AddOperation(op)
-
-	if hasToken {
-		broadcastOperations()
-	} else {
-		needBroadcast = true
-	}
-
-	return resp
+	return resp, execOpAndBroadcast(op)
 }
 
-func AddItemToCart(addeditem common.AddCartItem) (chan common.Response, bool) {
+func AddItemToCart(addeditem common.AddCartItem) (chan common.Response, OP_RESULT) {
 	resp := common.NewResponse()
 	op := NewOperation(OP_ADDCART)
 	item := common.Item{ItemIDMap[addeditem.ID].Name, uint32(addeditem.Volume), addeditem.ID, ItemIDMap[addeditem.ID].Price}
 	op.Payload, _ = item.MarshalBinary()
 
-	OpResult := op.generator()
-	Core.OperationSlice = Core.OperationSlice.AddOperation(op)
-
-	return resp, OpResult
+	return resp, execOpAndBroadcast(op)
 }
 
-func RemoveItemFromCart(rmitem common.RemoveCartItem) (chan common.Response, bool) {
+func RemoveItemFromCart(rmitem common.RemoveCartItem) (chan common.Response, OP_RESULT) {
 	resp := common.NewResponse()
 	op := NewOperation(OP_REMOVE)
 	item := common.Item{ItemIDMap[rmitem.ID].Name, uint32(rmitem.Volume), rmitem.ID, ItemIDMap[rmitem.ID].Price}
 	op.Payload, _ = item.MarshalBinary()
 
-	OpResult := op.generator()
-	Core.OperationSlice = Core.OperationSlice.AddOperation(op)
-
-	return resp, OpResult
+	return resp, execOpAndBroadcast(op)
 }
 
-func ClearShoppingCart() (chan common.Response, bool) {
+func ClearShoppingCart() (chan common.Response, OP_RESULT) {
 	resp := common.NewResponse()
 	op := NewOperation(OP_CLEAR)
 
-	OpResult := op.generator()
-	Core.OperationSlice = Core.OperationSlice.AddOperation(op)
-
-	return resp, OpResult
+	return resp, execOpAndBroadcast(op)
 }
 
-func CheckoutShoppingCart() {
-	mes := NewMessage(MESSAGE_SEND_RED)
-	Core.Network.BroadcastQueue <- *mes
+func CheckoutShoppingCart() (chan common.Response, OP_RESULT) {
+	resp := common.NewResponse()
+	op := NewOperation(OP_CHECKOUT)
+
+	return resp, execOpAndBroadcast(op)
+}
+
+func execOpAndBroadcast(op *Operation) OP_RESULT {
+	OpResult := op.generator()
+	if OpResult == OPERATION_SUCCESS {
+		Core.OperationSlice = Core.OperationSlice.AddOperation(op)
+		if hasToken && op.Optype == RED {
+			broadcastOperations()
+		} else {
+			needBroadcast = true
+		}
+	}
+	return OpResult
 }
 
 func broadcastOperations() {

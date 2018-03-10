@@ -16,19 +16,16 @@ type Operation struct {
 	PayloadLength uint32
 }
 
+var typeMap = map[int]int{
+	OP_ADDITEM:  RED,
+	OP_ADDCART:  BLUE,
+	OP_REMOVE:   BLUE,
+	OP_CLEAR:    BLUE,
+	OP_CHECKOUT: RED,
+}
+
 func (op *Operation) SetOPType() {
-	switch op.Action {
-	case OP_ADDITEM:
-		op.Optype = RED
-	case OP_ADDCART:
-		op.Optype = BLUE
-	case OP_REMOVE:
-		op.Optype = RED
-	case OP_CLEAR:
-		op.Optype = RED
-	case OP_CHECKOUT:
-		op.Optype = RED
-	}
+	op.Optype = byte(typeMap[int(op.Action)])
 }
 
 func NewOperation(action byte) *Operation {
@@ -136,8 +133,8 @@ func (slice *OperationSlice) HandleOperations() {
 	}
 }
 
-func (op Operation) generator() bool {
-	OpResult := 0
+func (op Operation) generator() OP_RESULT {
+	OpResult := OPERATION_FAIL
 	switch op.Action {
 	case OP_ADDITEM:
 		OpResult = op.shadow()
@@ -148,17 +145,15 @@ func (op Operation) generator() bool {
 	case OP_CLEAR:
 		OpResult = op.shadow()
 	case OP_CHECKOUT:
-		return true
+		if CheckItemVolume() {
+			OpResult = op.shadow()
+		}
 	}
-	if OpResult == OPERATION_SUCCESS {
-		return true
-	} else {
-		return false
-	}
+	return OpResult
 }
 
-func (op Operation) shadow() int {
-	OpResult := 0
+func (op Operation) shadow() OP_RESULT {
+	OpResult := OPERATION_FAIL
 	switch op.Action {
 	case OP_ADDITEM:
 		newItem := common.Item{}
@@ -175,6 +170,7 @@ func (op Operation) shadow() int {
 	case OP_CLEAR:
 		OpResult = ClearCartForServer()
 	case OP_CHECKOUT:
+		OpResult = CheckoutForServer()
 	}
 
 	return OpResult

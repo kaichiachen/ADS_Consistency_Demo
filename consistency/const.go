@@ -18,7 +18,9 @@ const (
 	MESSAGE_SEND_TOKEN
 )
 
+type OP_RESULT bool
+
 const (
-	OPERATION_SUCCESS = iota + 1
-	OPERATION_FAIL
+	OPERATION_SUCCESS = OP_RESULT(true)
+	OPERATION_FAIL    = OP_RESULT(false)
 )

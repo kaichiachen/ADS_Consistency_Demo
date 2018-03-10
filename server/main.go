@@ -72,9 +72,12 @@ func newitem(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 		fmt.Println(err)
 	}
 
-	consistency.NewItem(newItem)
+	_, OpResult := consistency.NewItem(newItem)
 
 	resp := common.Response{Succeed: true}
+	if !OpResult {
+		resp = common.Response{Succeed: false}
+	}
 	jData, err := json.Marshal(resp)
 	if err != nil {
 		panic(err)
@@ -126,12 +129,10 @@ func clear(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 }
 
 func checkout(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
-	consistency.CheckoutShoppingCart()
+	_, OpResult := consistency.CheckoutShoppingCart()
 
 	resp := common.Response{Succeed: true}
-
-	checkoutSuccess := consistency.CheckoutForServer()
-	if 0 == checkoutSuccess {
+	if !OpResult {
 		resp = common.Response{Succeed: false}
 	}
 
