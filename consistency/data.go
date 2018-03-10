@@ -97,14 +97,33 @@ func CheckItemVolume() OP_RESULT {
 	return true
 }
 
-func CheckoutForServer() OP_RESULT {
-	//TODO: recieve a req
-
-	for itemid, count := range cart.content {
+func ArchiveCartItems() []byte {
+	bs := []byte{}
+	for itemid, _ := range cart.content {
 		tempitem := ItemIDMap[itemid]
-		tempitem.Volume -= count
-		ItemIDMap[itemid] = tempitem
+		item := common.Item{tempitem.Name, cart.content[itemid], tempitem.ID, tempitem.Price}
+		bytes, _ := item.MarshalBinary()
+		bs = append(bs, bytes...)
 	}
+	return bs
+}
+
+func CheckoutForServer(op Operation) OP_RESULT {
+	itemCount := int(op.PayloadLength) / 118
+	bs := op.Payload
+	items := []common.Item{}
+	for i := 1; i <= itemCount; i++ {
+		item := common.Item{}
+		item.UnMarshalBinary(bs[118*(i-1) : 118*i])
+		items = append(items, item)
+	}
+
+	for i := 0; i < len(items); i++ {
+		tempitem := ItemIDMap[items[i].ID]
+		tempitem.Volume -= items[i].Volume
+		ItemIDMap[items[i].ID] = tempitem
+	}
+
 	ClearContent := make(map[string]uint32)
 	cart.content = ClearContent
 

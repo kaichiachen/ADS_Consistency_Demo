@@ -50,7 +50,7 @@ func (op *Operation) MarshalBinary() ([]byte, error) {
 	case OP_CLEAR:
 		bs.Write(op.Payload)
 	case OP_CHECKOUT:
-
+		bs.Write(op.Payload)
 	}
 	return bs.Bytes(), nil
 }
@@ -70,7 +70,7 @@ func (op *Operation) UnMarshalBinary(d []byte) []byte {
 	case OP_CLEAR:
 		op.Payload = bs.Next(int(op.PayloadLength))
 	case OP_CHECKOUT:
-
+		op.Payload = bs.Next(int(op.PayloadLength))
 	}
 
 	return bs.Next(math.MaxInt32)
@@ -145,9 +145,7 @@ func (op Operation) generator() OP_RESULT {
 	case OP_CLEAR:
 		OpResult = op.shadow()
 	case OP_CHECKOUT:
-		if CheckItemVolume() {
-			OpResult = op.shadow()
-		}
+		OpResult = op.shadow()
 	}
 	return OpResult
 }
@@ -170,7 +168,7 @@ func (op Operation) shadow() OP_RESULT {
 	case OP_CLEAR:
 		OpResult = ClearCartForServer()
 	case OP_CHECKOUT:
-		OpResult = CheckoutForServer()
+		OpResult = CheckoutForServer(op)
 	}
 
 	return OpResult
