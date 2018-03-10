@@ -17,9 +17,10 @@ var addrs = [5]string{
         "127.0.0.1:6670",
 }
 var mutex *Mutex
+var pools []Pool
 
 func newMockPools() []Pool {
-        pools := []Pool{}
+        pools = []Pool{}
         for i := 0; i < 5; i++ {
                 pools = append(pools, &redis.Pool{
                                 MaxIdle:     3,
