@@ -2,7 +2,12 @@ package consistency
 
 import (
 	"common"
-	//"fmt"
+	"fmt"
+
+	"bytes"
+	"encoding/binary"
+	"encoding/json"
+	"math"
 )
 
 var ItemIDMap map[string]common.Item
@@ -12,6 +17,88 @@ type Cart struct {
 }
 
 var cart Cart
+var Comuport int // port of this server
+
+func ComuportInit(serverport int) {
+	Comuport = serverport
+}
+
+func UnMarshalCart(d []byte) uint32 {
+       bs := bytes.NewBuffer(d)
+
+       var rednum uint32
+       binary.Read(bytes.NewBuffer(bs.Next(4)), binary.LittleEndian, &rednum)
+
+/*
+       bs = bytes.NewBuffer(bs.Next(math.MaxInt32))
+       e := gob.NewDecoder(bs)
+       var tmpmap map[string]common.Item
+       err := e.Decode(&tmpmap)
+       if err != nil {
+                fmt.Println(`failed gob Decode`, err);
+       } else {
+                fmt.Println(`gob Decode success!`);
+       }
+
+       // Ta da! It is a map!
+       fmt.Printf("%#v\n", tmpmap)
+       ItemIDMap = tmpmap
+*/
+       bs = bytes.NewBuffer(bs.Next(math.MaxInt32))
+       json.Unmarshal(bs.Bytes(), &ItemIDMap)
+       fmt.Printf("%#v\n", ItemIDMap)
+
+       return rednum
+}
+
+func ReplyStatusIsNew() {
+       mes := NewMessage(MESSAGE_STATUS_IS_NEW)
+       res := &bytes.Buffer{}
+
+       mes.Data = res.Bytes()
+       //fmt.Println("Ready to send MESSAGE_STATUS_IS_NEW")
+       //Core.Network.StartupMessageQueue <- *mes
+       Core.Network.StartupReplyQueue <- *mes
+       //Core.Network.BroadcastQueue <- *mes
+}
+
+func ReplyCurStatus() {
+        mes := NewMessage(MESSAGE_START_UPDATE_REPLY)
+        res := &bytes.Buffer{}
+
+        bs := &bytes.Buffer{}
+        binary.Write(bs, binary.LittleEndian, RedNum)
+        res.Write(bs.Bytes())
+
+/*
+        bs = &bytes.Buffer{}
+        e := gob.NewEncoder(bs)
+        err := e.Encode(&ItemIDMap)
+        if err != nil {
+                fmt.Println(`failed gob Encode`, err);
+        } else {
+                fmt.Println(`gob Encode success!`);
+        }
+        res.Write(bs.Bytes())
+*/
+        //emp := make(map[string]interface{})
+        //emp = ItemIDMap
+        empData, err := json.Marshal(ItemIDMap)
+        if err != nil {
+                fmt.Println(err.Error())
+                return
+        }
+
+        jsonStr := string(empData)
+        //fmt.Println("Current map is", jsonStr)
+        res.Write([]byte(jsonStr))
+
+        mes.Data = res.Bytes()
+        //fmt.Println("Ready to send MESSAGE_START_UPDATE_REPLY")
+        //Core.Network.BroadcastQueue <- *mes
+        Core.Network.StartupReplyQueue <- *mes
+        //Core.Network.StartupMessageQueue <- *mes
+}
 
 func initData() {
 

@@ -27,13 +27,15 @@ type Network struct {
 	BroadcastQueue     chan Message
 	IncomingMessages   chan Message
 	StartupMessageQueue chan Message
+	StartupReplyQueue chan Message
 }
 
 func SetupNetwork(address string, port int) *Network {
 	n := &Network{}
 	n.BroadcastQueue, n.IncomingMessages = make(chan Message), make(chan Message)
 	n.ConnectionQueue, n.ConnectionCallback = CreateConnectionQueue()
-	n.BroadcastQueue = make(chan Message)
+	n.StartupMessageQueue = make(chan Message)
+	n.StartupReplyQueue = make(chan Message)
 	n.Nodes = Nodes{}
 	n.Address = fmt.Sprintf("%s:%d", address, port)
 	n.Port = port
@@ -53,6 +55,8 @@ func (n *Network) Run() {
 			go n.BroadcastMessage(message)
 		case startmsg := <-n.StartupMessageQueue:
 			go n.StartUpdateStatus(startmsg)
+		case reply := <-n.StartupReplyQueue:
+			go n.StartReplyStatus(reply)
 		}
 	}
 }
@@ -90,7 +94,7 @@ func (n Nodes) AddNode(node *Node) bool {
 	port, _ := strconv.Atoi(p)
 	addr := fmt.Sprintf("%s:%d", ip, port)
 
-	if addr != Core.Network.Address && n[addr] == nil {
+	if addr != Core.Network.Address { // allow restarted server to overwrite
 		// log.Println("Node connected ", addr)
 		n[addr] = node
 
@@ -203,11 +207,13 @@ func (n *Network) StartUpdateStatus(message Message) {
 		rip := node.TCPConn.RemoteAddr().String()
 		p := rip[len(findIPAddress(rip))+1:]
 		port, _ := strconv.Atoi(p);
-		if port >= 20000 && port <= 20002 {
+		if port == 20000 { // 20000 is the seed
 			go func(node Node) {
 				_, err := node.TCPConn.Write(b)
 				if err != nil {
 					fmt.Println("start message send failed to ", node.TCPConn.RemoteAddr())
+				} else {
+					fmt.Println("start message send success!!")
 				}
 			}(*node)
 		}
@@ -226,10 +232,33 @@ func (n *Network) BroadcastMessage(message Message) {
 				_, err := node.TCPConn.Write(b)
 				if err != nil {
 					fmt.Println("Error broadcast to", node.TCPConn.RemoteAddr())
+				} else {
+					fmt.Println("start message send success!!")
 				}
 			}(*node)
 		}
 	}
+}
+
+func (n *Network) StartReplyStatus(message Message) {
+        b, _ := message.MarshalBinary()
+        for _, node := range n.Nodes {
+                rip := node.TCPConn.RemoteAddr().String()
+                p := rip[len(findIPAddress(rip))+1:]
+                port, _ := strconv.Atoi(p);
+                fmt.Println("p = ", p, " port = ", port)
+                if Comuport == 20000 { // 20000 is the seed
+                        fmt.Println("Going to reply to ", node.TCPConn.RemoteAddr())
+                        go func(node Node) {
+                                _, err := node.TCPConn.Write(b)
+                                if err != nil {
+                                        fmt.Println("start message reply failed to ", node.TCPConn.RemoteAddr())
+                                } else {
+                                        fmt.Println("start message reply success!!")
+                                }
+                        }(*node)
+                }
+        }
 }
 
 func (n *Network) SendMessage(message Message, sendPort int) bool {

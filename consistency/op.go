@@ -16,12 +16,21 @@ type Operation struct {
 	PayloadLength uint32
 }
 
+type StartupMsg struct {
+	RedNum        uint32
+}
+
 var typeMap = map[int]int{
 	OP_ADDITEM:  RED,
 	OP_ADDCART:  BLUE,
 	OP_REMOVE:   BLUE,
 	OP_CLEAR:    BLUE,
 	OP_CHECKOUT: RED,
+}
+
+func (msg *StartupMsg) UnMarshalInt(d []byte) {
+       bs := bytes.NewBuffer(d)
+       binary.Read(bytes.NewBuffer(bs.Next(4)), binary.LittleEndian, &msg.RedNum)
 }
 
 func (op *Operation) SetOPType() {
@@ -126,6 +135,9 @@ func (slice *OperationSlice) UnMarshalBinary(d []byte) error {
 
 func (slice *OperationSlice) HandleOperations() {
 	for _, s := range *slice {
+		if RedNum < s.Timestamp {
+			RedNum = s.Timestamp
+		}
 		if !s.generator() {
 			log.Println("Generate Fail!")
 			break

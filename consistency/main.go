@@ -2,6 +2,7 @@ package consistency
 
 import (
 	"log"
+	"fmt"
 )
 
 var Core = struct {
@@ -9,6 +10,9 @@ var Core = struct {
 	OperationSlice
 	tokens chan string
 }{}
+
+var RedNum uint32 = uint32(0)
+var SendRequest bool = false  // don't send reply unless you receive one
 
 func Start(address string, port int, nodes []string) {
 	initData()
@@ -52,8 +56,34 @@ func HandleIncomingMessage(msg Message) {
 		}
 		go sendToken()
 	case MESSAGE_START_UPDATE:
+		fmt.Println("Receive MESSAGE_START_UPDATE")
+		if Comuport != 20000 {
+			break
+		}
+		startmsg := StartupMsg{}
+		startmsg.UnMarshalInt(msg.Data)
+		//fmt.Println("startmsg.RedNum = ", startmsg.RedNum, "RedNum", RedNum)
+		if startmsg.RedNum < RedNum {
+			ReplyCurStatus()
+		} else {
+			ReplyStatusIsNew()
+		}
 		break
 	case MESSAGE_START_UPDATE_REPLY:
+		fmt.Println("Receive MESSAGE_START_UPDATE_REPLY")
+		fmt.Println("SendRequest is ", SendRequest)
+		if SendRequest {
+			fmt.Println("======== RedNum before ", RedNum)
+			RedNum = UnMarshalCart(msg.Data)
+			fmt.Println("======== RedNum after ", RedNum)
+			SendRequest = false
+		}
 		break
+	case MESSAGE_STATUS_IS_NEW:
+		fmt.Println("Receive MESSAGE_STATUS_IS_NEW")
+		fmt.Println("SendRequest is ", SendRequest)
+		if SendRequest {
+			SendRequest = false
+		}
 	}
 }

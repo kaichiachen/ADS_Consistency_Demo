@@ -7,6 +7,7 @@ import (
 	"math/rand"
 	"time"
 	"bytes"
+	"encoding/binary"
 )
 
 var needBroadcast = false
@@ -74,6 +75,7 @@ func execOpAndBroadcast(op *Operation, resp chan common.Response) OP_RESULT {
 		fmt.Print("\t")
 		fmt.Printf("%c[%d;%d;%dm%s %s: %d%c[0m ", 0x1B, 0, 40, 36, "", "blue", blue, 0x1B)
 		fmt.Println()
+/*
 		if hasToken && op.Optype == RED {
 			broadcastOperations(resp)
 		} else if op.Optype == RED {
@@ -88,14 +90,16 @@ func execOpAndBroadcast(op *Operation, resp chan common.Response) OP_RESULT {
 		} else {
 			resp <- common.Response{Succeed: true}
 		}
-
-		// if op.Optype == RED {
-		// 	mutex.Lock()
-		// 	broadcastOperations(resp)
-		// 	mutex.Unlock()
-		// } else {
-		// 	resp <- common.Response{Succeed: true}
-		// }
+*/
+		if op.Optype == RED {
+			mutex.Lock()
+			broadcastOperations(resp)
+			op.Timestamp = RedNum + 1
+			RedNum++
+			mutex.Unlock()
+		} else {
+			resp <- common.Response{Succeed: true}
+		}
 	} else {
 		resp <- common.Response{Succeed: false}
 	}
@@ -105,7 +109,7 @@ func execOpAndBroadcast(op *Operation, resp chan common.Response) OP_RESULT {
 func StartStatusRequest() {
 	mes := NewMessage(MESSAGE_START_UPDATE)
 	bs := &bytes.Buffer{}
-	//bs = binary(bs, binary.LittleEndian, CurRed) //current red counter
+	binary.Write(bs, binary.LittleEndian, RedNum) //current red counter
 	mes.Data = bs.Bytes()
 	Core.Network.StartupMessageQueue <- *mes
 }

@@ -9,6 +9,7 @@ import (
 	"github.com/julienschmidt/httprouter"
 	"log"
 	"net/http"
+	"time"
 )
 
 type arrayFlags []string
@@ -141,11 +142,27 @@ func mycarts(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	w.Write(jData)
 }
 
+func trytoupdate() {
+        time.Sleep(4 * time.Second) // wait for server to fully setup
+        //if comuport != 20000 { //20000 serves as seed
+                fmt.Println("Requesting for nodes")
+                consistency.SendRequest = true
+                consistency.StartStatusRequest()
+                for {
+                        if consistency.SendRequest {
+                                time.Sleep(10 * time.Millisecond)
+                        }
+                }
+                fmt.Println("Status updated for ", comuport)
+        //}
+}
+
 func main() {
 	flag.Usage = usage
 	flag.Parse()
 	log.SetFlags(log.LstdFlags | log.Lshortfile)
 
+	consistency.ComuportInit(comuport)
 	consistency.MutexInit()
 	consistency.Start(getIPAddress(), comuport, nodes)
 
@@ -159,8 +176,8 @@ func main() {
 	router.GET("/mycarts", mycarts)
 	router.GET("/items", items)
 	fmt.Println(fmt.Sprintf("localhost:%d", restport))
-	if restport != 20000 { //20000 serves as seed
-		//consistency.StartStatusRequest()
+	if comuport != 20000 { //20000 serves as seed
+		go trytoupdate()
 	}
 	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%d", restport), router))
 }
