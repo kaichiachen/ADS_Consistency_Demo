@@ -15,6 +15,7 @@ import (
 )
 
 var port int
+var responseTime chan time.Duration
 
 func init() {
 	flag.IntVar(&port, "port", 10000, "server port")
@@ -52,6 +53,8 @@ func main() {
 	flag.Parse()
 	log.SetFlags(log.LstdFlags | log.Lshortfile)
 	url = fmt.Sprintf("http://localhost:%d", port)
+
+	responseTime = make(chan time.Duration, 1)
 
 	fmt.Println("欢迎光临线上购物书城")
 	for {
@@ -103,11 +106,20 @@ func request(method, api string, j []byte, benchmark bool) *http.Response {
 	}
 	if benchmark {
 		elapsed := time.Since(start)
-		fmt.Println()
-		fmt.Printf("%c[%d;%d;%dm%s耗时: %s%c[0m ", 0x1B, 0, 40, 31, "", elapsed, 0x1B)
-		fmt.Println()
+		//fmt.Println()
+		//fmt.Printf("%c[%d;%d;%dm%s耗时: %s%c[0m ", 0x1B, 0, 40, 31, "", elapsed, 0x1B)
+		//fmt.Println()
+		responseTime <- elapsed
 	}
 	return resp
+}
+
+func printResponceTime() {
+	fmt.Println()
+	fmt.Printf("%c[%d;%d;%dm%s耗时: %s%c[0m ", 0x1B, 0, 40, 31, "", <-responseTime, 0x1B)
+	fmt.Println()
+	fmt.Println()
+
 }
 
 func readStdin() chan string {
@@ -174,6 +186,7 @@ func AddItemOption() {
 		fmt.Println("	新增商品失败！")
 	}
 
+	printResponceTime()
 }
 
 func ReadItemListOption() {
@@ -230,6 +243,7 @@ func ReadItemListOption() {
 		fmt.Println("	加入购物车失败！")
 	}
 
+	printResponceTime()
 }
 
 func RmItemOption() {
@@ -270,6 +284,7 @@ func RmItemOption() {
 	} else {
 		fmt.Println("	操作购物车失败！")
 	}
+	printResponceTime()
 }
 
 func ClearCartOption() {
@@ -288,6 +303,7 @@ func ClearCartOption() {
 	} else {
 		fmt.Println("	清空购物车失败！")
 	}
+	printResponceTime()
 
 }
 
@@ -311,5 +327,6 @@ func CheckoutOption() {
 	} else {
 		fmt.Println("	结账失败！")
 	}
+	printResponceTime()
 
 }
