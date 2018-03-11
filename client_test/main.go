@@ -10,72 +10,107 @@ import (
 	"time"
 )
 
-var mIndex = []string{"add", "new", "clear", "remove", "checkout"}
-var m = map[string]string{
-	"add":      "/additem",
-	"new":      "/newitem",
-	"clear":    "/clear",
-	"remove":   "/removeitem",
-	"checkout": "/checkout",
-}
+var mIndex = []string{"新增商品", "放进购物车", "清除", "移除商品", "结账"}
+var timeSlice = []time.Duration{0, 0, 0, 0, 0}
+var countSlice = []int{0, 0, 0, 0, 0}
+var averageSlice = []time.Duration{0, 0, 0, 0, 0}
+
+// var m = map[string]string{
+// 	"add":      "/additem",
+// 	"new":      "/newitem",
+// 	"clear":    "/clear",
+// 	"remove":   "/removeitem",
+// 	"checkout": "/checkout",
+// }
 
 var client = []int{10000, 10001, 10002}
 
-const opCount = 5
+const opCount = 100
+const logError = true
 
 func main() {
 	ops := []int{}
 	for i := 0; i < opCount; i++ {
-		r := rand.Intn(opCount)
+		r := rand.Intn(5)
 		ops = append(ops, r)
 	}
-	var sum time.Duration = 0
+loop:
 	for _, v := range ops {
+		fmt.Println(mIndex[v])
 		switch v {
 		case 0:
 			port := client[rand.Intn(len(client))]
 			ok, elapsed := newItemRequest("java", 100, 100, port)
-			if !ok {
+			if !ok && logError {
 				fmt.Println(v, "error occur!")
 			} else {
-				sum += elapsed
+				timeSlice[v] += elapsed
+				countSlice[v] += 1
 			}
 		case 1:
 			port := client[rand.Intn(len(client))]
 			items := itemsRequest(port)
 			item := items[rand.Intn(len(items))]
 			ok, elapsed := addItemRequest(item.ID, uint32(rand.Intn(int(item.Volume))), port)
-			if !ok {
+			if !ok && logError {
 				fmt.Println(v, "error occur!")
 			} else {
-				sum += elapsed
+				timeSlice[v] += elapsed
+				countSlice[v] += 1
 			}
 		case 2:
 			port := client[rand.Intn(len(client))]
 			ok, elapsed := clearCartRequest(port)
-			if !ok {
+			if !ok && logError {
 				fmt.Println(v, "error occur!")
 			} else {
-				sum += elapsed
+				timeSlice[v] += elapsed
+				countSlice[v] += 1
 			}
 		case 3:
 			port := client[rand.Intn(len(client))]
 			items := cartRequest(port)
-			item := items[rand.Intn(len(items))]
-			ok, elapsed := removeItemRequest(item.ID, rand.Intn(3), port)
-			if !ok {
-				fmt.Println(v, "error occur!")
-			} else {
-				sum += elapsed
+			if len(items) != 0 {
+				item := items[rand.Intn(len(items))]
+				if item.Volume != 0 {
+					num := rand.Intn(int(item.Volume))
+					ok, elapsed := removeItemRequest(item.ID, num, port)
+					if !ok && logError {
+						fmt.Println(items)
+						fmt.Println(item)
+						fmt.Println(num)
+						fmt.Println(v, "error occur!")
+						fmt.Println(port)
+						break loop
+					} else {
+						timeSlice[v] += elapsed
+						countSlice[v] += 1
+					}
+				}
 			}
 		case 4:
 			port := client[rand.Intn(len(client))]
 			ok, elapsed := checkoutRequest(port)
-			if !ok {
+			if !ok && logError {
 				fmt.Println(v, "error occur!")
 			} else {
-				sum += elapsed
+				timeSlice[v] += elapsed
+				countSlice[v] += 1
 			}
+		}
+	}
+	for i := 0; i < len(timeSlice); i++ {
+		if countSlice[i] != 0 {
+			averageSlice[i] = timeSlice[i] / time.Duration(countSlice[i])
+		}
+	}
+	for i := 0; i < len(averageSlice); i++ {
+		if common.TypeMap[i] == common.RED {
+			fmt.Printf("%c[%d;%d;%dm%s: %0.50s%c[0m ", 0x1B, 0, 40, 31, mIndex[i]+"latency", averageSlice[i], 0x1B)
+			fmt.Println()
+		} else {
+			fmt.Printf("%c[%d;%d;%dm%s: %0.50s%c[0m ", 0x1B, 0, 40, 36, mIndex[i]+"latency", averageSlice[i], 0x1B)
+			fmt.Println()
 		}
 	}
 }
@@ -161,7 +196,7 @@ func request(method, api string, j []byte, benchmark bool, port int) (*http.Resp
 	if benchmark {
 		start = time.Now()
 	}
-	url := fmt.Sprintf("localhost:%p%s", port, api)
+	url := fmt.Sprintf("http://localhost:%d%s", port, api)
 	req, err := http.NewRequest(method, url, bytes.NewBuffer(j))
 	req.Header.Set("Content-Type", "application/json")
 	client := &http.Client{}
@@ -171,9 +206,6 @@ func request(method, api string, j []byte, benchmark bool, port int) (*http.Resp
 	}
 	if benchmark {
 		elapsed := time.Since(start)
-		fmt.Println()
-		fmt.Printf("%c[%d;%d;%dm%s耗时: %s%c[0m ", 0x1B, 0, 40, 31, "", elapsed, 0x1B)
-		fmt.Println()
 		return resp, elapsed
 	}
 	return resp, 0

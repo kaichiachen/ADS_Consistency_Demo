@@ -10,3 +10,16 @@ const (
 	CLEAR
 	SETTLE
 )
+
+const (
+	RED = iota
+	BLUE
+)
+
+var TypeMap = []int{
+	RED,
+	BLUE,
+	BLUE,
+	BLUE,
+	RED,
+}

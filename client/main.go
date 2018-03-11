@@ -26,19 +26,6 @@ func usage() {
 
 var url string
 
-const (
-	RED  = iota
-	BLUE = iota + 1
-)
-
-var typeMap = []int{
-	RED,
-	BLUE,
-	BLUE,
-	BLUE,
-	RED,
-}
-
 var titleMap = []string{
 	"新增商品",
 	"看商品",
@@ -61,7 +48,7 @@ func main() {
 		fmt.Println()
 		fmt.Println("请问您要：")
 		for k, v := range titleMap {
-			if typeMap[k] == BLUE {
+			if common.TypeMap[k] == common.BLUE {
 				fmt.Printf("%c[%d;%d;%dm%s %d. %s%c[0m ", 0x1B, 0, 40, 36, "", k+1, v, 0x1B)
 				fmt.Println()
 			} else {
