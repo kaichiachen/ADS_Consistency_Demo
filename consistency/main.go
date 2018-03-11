@@ -51,5 +51,9 @@ func HandleIncomingMessage(msg Message) {
 			Core.tokens <- ""
 		}
 		go sendToken()
+	case MESSAGE_START_UPDATE:
+		break
+	case MESSAGE_START_UPDATE_REPLY:
+		break
 	}
 }

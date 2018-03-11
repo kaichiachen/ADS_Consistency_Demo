@@ -6,6 +6,7 @@ import (
 	"log"
 	"math/rand"
 	"time"
+	"bytes"
 )
 
 var needBroadcast = false
@@ -99,6 +100,14 @@ func execOpAndBroadcast(op *Operation, resp chan common.Response) OP_RESULT {
 		resp <- common.Response{Succeed: false}
 	}
 	return OpResult
+}
+
+func StartStatusRequest() {
+	mes := NewMessage(MESSAGE_START_UPDATE)
+	bs := &bytes.Buffer{}
+	//bs = binary(bs, binary.LittleEndian, CurRed) //current red counter
+	mes.Data = bs.Bytes()
+	Core.Network.StartupMessageQueue <- *mes
 }
 
 func broadcastOperations(resp chan common.Response) {
