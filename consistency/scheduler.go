@@ -2,6 +2,7 @@ package consistency
 
 import (
 	"common"
+	"fmt"
 	"log"
 	"math/rand"
 	"time"
@@ -10,6 +11,7 @@ import (
 var needBroadcast = false
 
 func NewItem(item common.NewItem) chan common.Response {
+	fmt.Println("新增商品")
 	resp := make(chan common.Response)
 	op := NewOperation(OP_ADDITEM)
 	newItem := common.Item{ID: generateID(common.ITEM_ID_LENGTH), Name: item.Name, Volume: item.Volume, Price: item.Price}
@@ -20,6 +22,7 @@ func NewItem(item common.NewItem) chan common.Response {
 }
 
 func AddItemToCart(addeditem common.AddCartItem) chan common.Response {
+	fmt.Println("放商品进购物车")
 	resp := make(chan common.Response)
 	op := NewOperation(OP_ADDCART)
 	item := common.Item{ItemIDMap[addeditem.ID].Name, uint32(addeditem.Volume), addeditem.ID, ItemIDMap[addeditem.ID].Price}
@@ -30,6 +33,7 @@ func AddItemToCart(addeditem common.AddCartItem) chan common.Response {
 }
 
 func RemoveItemFromCart(rmitem common.RemoveCartItem) chan common.Response {
+	fmt.Println("从购物车移除商品")
 	resp := make(chan common.Response)
 	op := NewOperation(OP_REMOVE)
 	item := common.Item{ItemIDMap[rmitem.ID].Name, uint32(rmitem.Volume), rmitem.ID, ItemIDMap[rmitem.ID].Price}
@@ -40,6 +44,7 @@ func RemoveItemFromCart(rmitem common.RemoveCartItem) chan common.Response {
 }
 
 func ClearShoppingCart() chan common.Response {
+	fmt.Println("清除购物车")
 	resp := make(chan common.Response)
 	op := NewOperation(OP_CLEAR)
 	go execOpAndBroadcast(op, resp)
@@ -47,7 +52,8 @@ func ClearShoppingCart() chan common.Response {
 }
 
 func CheckoutShoppingCart() chan common.Response {
-	resp := make(chan common.Response)
+	fmt.Println("结账")
+	resp := make(chan common.Response, 1)
 	op := NewOperation(OP_CHECKOUT)
 	if !CheckItemVolume() {
 		resp <- common.Response{Succeed: false}
@@ -62,6 +68,11 @@ func execOpAndBroadcast(op *Operation, resp chan common.Response) OP_RESULT {
 	OpResult := op.generator()
 	if OpResult == OPERATION_SUCCESS {
 		Core.OperationSlice = Core.OperationSlice.AddOperation(op)
+		red, blue := Core.OperationSlice.Count()
+		fmt.Printf("%c[%d;%d;%dm%s %s: %d%c[0m ", 0x1B, 0, 40, 31, "", "red: ", red, 0x1B)
+		fmt.Print("\t")
+		fmt.Printf("%c[%d;%d;%dm%s %s: %d%c[0m ", 0x1B, 0, 40, 36, "", "blue: ", blue, 0x1B)
+		fmt.Println()
 		if hasToken && op.Optype == RED {
 			broadcastOperations(resp)
 		} else if op.Optype == RED {

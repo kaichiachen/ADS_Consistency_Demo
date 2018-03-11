@@ -26,6 +26,27 @@ func usage() {
 
 var url string
 
+const (
+	RED  = iota
+	BLUE = iota + 1
+)
+
+var typeMap = []int{
+	RED,
+	BLUE,
+	BLUE,
+	BLUE,
+	RED,
+}
+
+var titleMap = []string{
+	"新增商品",
+	"看商品",
+	"从购物车减少商品",
+	"清空购物车",
+	"结算购物车",
+}
+
 func main() {
 	flag.Usage = usage
 	flag.Parse()
@@ -39,11 +60,15 @@ func main() {
 		printCartList()
 		fmt.Println()
 		fmt.Println("请问您要：")
-		fmt.Println("1. 新增商品")     // red
-		fmt.Println("2. 看商品")      // blue
-		fmt.Println("3. 从购物车减少商品") // blue
-		fmt.Println("4. 清空购物车")    // blue
-		fmt.Println("5. 结算购物车")    //red
+		for k, v := range titleMap {
+			if typeMap[k] == BLUE {
+				fmt.Printf("%c[%d;%d;%dm%s %d. %s%c[0m ", 0x1B, 0, 40, 36, "", k+1, v, 0x1B)
+				fmt.Println()
+			} else {
+				fmt.Printf("%c[%d;%d;%dm%s %d. %s%c[0m ", 0x1B, 0, 40, 31, "", k+1, v, 0x1B)
+				fmt.Println()
+			}
+		}
 		fmt.Print("请选择：")
 		input := <-readStdin()
 		switch input {
@@ -60,6 +85,7 @@ func main() {
 		default:
 			break
 		}
+		fmt.Printf("%c[%d;%d;%dm%s===========================================%c[0m ", 0x1B, 0, 40, 31, "", 0x1B)
 	}
 }
 
@@ -79,7 +105,6 @@ func request(method, api string, j []byte, benchmark bool) *http.Response {
 		elapsed := time.Since(start)
 		fmt.Println()
 		fmt.Printf("%c[%d;%d;%dm%s耗时: %s%c[0m ", 0x1B, 0, 40, 31, "", elapsed, 0x1B)
-		fmt.Println()
 		fmt.Println()
 	}
 	return resp
@@ -144,9 +169,9 @@ func AddItemOption() {
 		fmt.Println(err)
 	}
 	if response.Succeed {
-		fmt.Println("新增商品成功！")
+		fmt.Println("	新增商品成功！")
 	} else {
-		fmt.Println("新增商品失败！")
+		fmt.Println("	新增商品失败！")
 	}
 
 }
@@ -200,9 +225,9 @@ func ReadItemListOption() {
 		fmt.Println(err)
 	}
 	if response.Succeed {
-		fmt.Println("加入购物车成功！")
+		fmt.Println("	加入购物车成功！")
 	} else {
-		fmt.Println("加入购物车失败！")
+		fmt.Println("	加入购物车失败！")
 	}
 
 }
@@ -241,11 +266,10 @@ func RmItemOption() {
 		fmt.Println(err)
 	}
 	if response.Succeed {
-		fmt.Println("操作购物车成功！")
+		fmt.Println("	操作购物车成功！")
 	} else {
-		fmt.Println("操作购物车失败！")
+		fmt.Println("	操作购物车失败！")
 	}
-
 }
 
 func ClearCartOption() {
@@ -260,9 +284,9 @@ func ClearCartOption() {
 		fmt.Println(err)
 	}
 	if response.Succeed {
-		fmt.Println("清空购物车成功！")
+		fmt.Println("	清空购物车成功！")
 	} else {
-		fmt.Println("清空购物车失败！")
+		fmt.Println("	清空购物车失败！")
 	}
 
 }
@@ -283,9 +307,9 @@ func CheckoutOption() {
 		fmt.Println(err)
 	}
 	if response.Succeed {
-		fmt.Println("\n结账成功！")
+		fmt.Println("	结账成功！")
 	} else {
-		fmt.Println("\n结账失败！")
+		fmt.Println("	结账失败！")
 	}
 
 }

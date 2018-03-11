@@ -133,6 +133,19 @@ func (slice *OperationSlice) HandleOperations() {
 	}
 }
 
+func (slice *OperationSlice) Count() (red int, blue int) {
+	red = 0
+	blue = 0
+	for _, s := range *slice {
+		if s.Optype == RED {
+			red += 1
+		} else {
+			blue += 1
+		}
+	}
+	return red, blue
+}
+
 func (op Operation) generator() OP_RESULT {
 	OpResult := OPERATION_FAIL
 	switch op.Action {
