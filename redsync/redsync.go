@@ -24,7 +24,7 @@ func (r *Redsync) NewMutex(name string, options ...Option) *Mutex {
 		delay:  500 * time.Millisecond,
 		factor: 0.01,
 */
-		expiry: 1 * time.Second,
+		expiry: 2 * time.Second,
 		tries:  5,
 		delay:  10 * time.Millisecond,
                 factor: 0.01,
