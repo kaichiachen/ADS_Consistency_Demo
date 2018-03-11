@@ -159,6 +159,9 @@ func main() {
 	router.GET("/mycarts", mycarts)
 	router.GET("/items", items)
 	fmt.Println(fmt.Sprintf("localhost:%d", restport))
+	if restport != 20000 { //20000 serves as seed
+		//consistency.StartStatusRequest()
+	}
 	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%d", restport), router))
 }
 
