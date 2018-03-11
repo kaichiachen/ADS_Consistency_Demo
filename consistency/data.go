@@ -61,20 +61,21 @@ func RemoveItemFromCartForClient(itemid string, num uint32) OP_RESULT {
 		if count, ok := cart.content[itemid]; ok {
 			if count >= num {
 				cart.content[itemid] = count - num
-				//fmt.Printf("remove %d <%s> successfully, now %d in cart\n", num, item.Name, cart.content[itemid])
+				// fmt.Printf("remove %d <%s> successfully, now %d in cart\n", num, item.Name, cart.content[itemid])
 				if count == num {
 					delete(cart.content, itemid)
 				}
 				return OPERATION_SUCCESS
 
 			} else {
-				//fmt.Printf("You have %d <%s> but want remove %d. Nothing happens.\n", cart.content[itemid], item.Name, num)
+				// fmt.Printf("You have %d <%s> but want remove %d. Nothing happens.\n", cart.content[itemid], item.Name, num)
 			}
 		} else {
-			//fmt.Printf("No such item in your cart.\n")
+			// fmt.Printf("No such item in your cart.\n")
+			return OPERATION_SUCCESS
 		}
 	} else {
-		//fmt.Printf("no such item\n")
+		// fmt.Printf("no such item\n")
 	}
 	return OPERATION_FAIL
 }

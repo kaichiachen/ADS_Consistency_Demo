@@ -40,7 +40,7 @@ loop:
 		switch v {
 		case 0:
 			port := client[rand.Intn(len(client))]
-			ok, elapsed := newItemRequest("java", 100, 100, port)
+			ok, elapsed := newItemRequest(generateBook(5), 100, 100, port)
 			if !ok && logError {
 				fmt.Println(v, "error occur!")
 			} else {
@@ -81,6 +81,7 @@ loop:
 						fmt.Println(num)
 						fmt.Println(v, "error occur!")
 						fmt.Println(port)
+						fmt.Println(cartRequest(port))
 						break loop
 					} else {
 						timeSlice[v] += elapsed
@@ -209,4 +210,13 @@ func request(method, api string, j []byte, benchmark bool, port int) (*http.Resp
 		return resp, elapsed
 	}
 	return resp, 0
+}
+
+func generateBook(n int) string {
+	var letterBytes = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
+	b := make([]byte, n)
+	for i := range b {
+		b[i] = letterBytes[rand.Intn(len(letterBytes))]
+	}
+	return string(b)
 }

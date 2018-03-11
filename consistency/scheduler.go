@@ -69,9 +69,9 @@ func execOpAndBroadcast(op *Operation, resp chan common.Response) OP_RESULT {
 	if OpResult == OPERATION_SUCCESS {
 		Core.OperationSlice = Core.OperationSlice.AddOperation(op)
 		red, blue := Core.OperationSlice.Count()
-		fmt.Printf("%c[%d;%d;%dm%s %s: %d%c[0m ", 0x1B, 0, 40, 31, "", "red: ", red, 0x1B)
+		fmt.Printf("%c[%d;%d;%dm%s %s: %d%c[0m ", 0x1B, 0, 40, 31, "", "red", red, 0x1B)
 		fmt.Print("\t")
-		fmt.Printf("%c[%d;%d;%dm%s %s: %d%c[0m ", 0x1B, 0, 40, 36, "", "blue: ", blue, 0x1B)
+		fmt.Printf("%c[%d;%d;%dm%s %s: %d%c[0m ", 0x1B, 0, 40, 36, "", "blue", blue, 0x1B)
 		fmt.Println()
 		// if hasToken && op.Optype == RED {
 		// 	broadcastOperations(resp)
@@ -87,10 +87,9 @@ func execOpAndBroadcast(op *Operation, resp chan common.Response) OP_RESULT {
 		// } else {
 		// 	resp <- common.Response{Succeed: true}
 		// }
+
 		if op.Optype == RED {
-			mutex.Lock()
 			broadcastOperations(resp)
-			mutex.Unlock()
 		} else {
 			resp <- common.Response{Succeed: true}
 		}
