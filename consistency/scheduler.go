@@ -90,7 +90,7 @@ func broadcastOperations(resp chan common.Response) {
 	}
 	mes.Data = data
 	Core.OperationSlice = Core.OperationSlice.ClearOperation()
-	//time.Sleep(100 * time.Millisecond)
+	time.Sleep(100 * time.Millisecond)
 	Core.Network.BroadcastQueue <- *mes
 	resp <- common.Response{Succeed: true}
 	needBroadcast = false

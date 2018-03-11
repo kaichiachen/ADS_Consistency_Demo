@@ -195,17 +195,18 @@ loop:
 
 func (n *Network) BroadcastMessage(message Message) {
 	b, _ := message.MarshalBinary()
-	for k, node := range n.Nodes {
-		p := k[len(findIPAddress(k))+1:]
+	for _, node := range n.Nodes {
+		rip := node.TCPConn.RemoteAddr().String()
+		p := rip[len(findIPAddress(rip))+1:]
 		port, _ := strconv.Atoi(p)
 		if port >= 20000 && port <= 20002 {
-			fmt.Println("Broadcasting...", k)
-			go func() {
+			fmt.Println("Broadcasting...", rip)
+			go func(node Node) {
 				_, err := node.TCPConn.Write(b)
 				if err != nil {
 					fmt.Println("Error broadcast to", node.TCPConn.RemoteAddr())
 				}
-			}()
+			}(*node)
 		}
 	}
 }

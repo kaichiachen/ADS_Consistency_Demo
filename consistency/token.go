@@ -5,7 +5,7 @@ import (
 	"time"
 )
 
-var SERVER_PORTS = []int{20000, 20001}
+var SERVER_PORTS = []int{20000, 20001, 20002}
 
 var hasToken = false
 

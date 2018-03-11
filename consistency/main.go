@@ -12,7 +12,7 @@ var Core = struct {
 
 func Start(address string, port int, nodes []string) {
 	initData()
-	Core.tokens = make(chan string, 10)
+	Core.tokens = make(chan string, 5)
 	Core.Network = SetupNetwork(address, port)
 	go Core.Network.Run()
 	if port == SERVER_PORTS[0] {
@@ -37,12 +37,17 @@ func HandleIncomingMessage(msg Message) {
 	switch msg.Identifier {
 	case MESSAGE_SEND_RED:
 		ops := OperationSlice{}
+		//log.Println(msg.Data)
 		ops.UnMarshalBinary(msg.Data)
+
 		log.Println("Op sequence len: ", ops.Len())
+		// for _, s := range ops {
+		// 	log.Println(s.PayloadLength)
+		// }
 		ops.HandleOperations()
 	case MESSAGE_SEND_TOKEN:
 		// log.Println("Receieve token")
-		for i := 0; i < 10; i++ {
+		for i := 0; i < 5; i++ {
 			Core.tokens <- ""
 		}
 		go sendToken()
