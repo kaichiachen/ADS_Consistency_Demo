@@ -2,7 +2,7 @@ package consistency
 
 import (
 	"common"
-	"fmt"
+	//"fmt"
 )
 
 var ItemIDMap map[string]common.Item
@@ -84,7 +84,7 @@ func ClearCartForServer() OP_RESULT {
 	//TODO: Recieve
 	ClearContent := make(map[string]uint32)
 	cart.content = ClearContent
-	fmt.Printf("Now you have nothing in your cart\n")
+	// fmt.Printf("Now you have nothing in your cart\n")
 	return OPERATION_SUCCESS
 	//TODO: send confirm
 }
