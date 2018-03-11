@@ -26,12 +26,14 @@ type Network struct {
 	ConnectionCallback NodeChannel
 	BroadcastQueue     chan Message
 	IncomingMessages   chan Message
+	StartupMessageQueue chan Message
 }
 
 func SetupNetwork(address string, port int) *Network {
 	n := &Network{}
 	n.BroadcastQueue, n.IncomingMessages = make(chan Message), make(chan Message)
 	n.ConnectionQueue, n.ConnectionCallback = CreateConnectionQueue()
+	n.BroadcastQueue = make(chan Message)
 	n.Nodes = Nodes{}
 	n.Address = fmt.Sprintf("%s:%d", address, port)
 	n.Port = port
@@ -49,6 +51,8 @@ func (n *Network) Run() {
 			Core.Nodes.AddNode(node)
 		case message := <-n.BroadcastQueue:
 			go n.BroadcastMessage(message)
+		case startmsg := <-n.StartupMessageQueue:
+			go n.StartUpdateStatus(startmsg)
 		}
 	}
 }
@@ -189,6 +193,23 @@ loop:
 			}
 		case <-breakChannel:
 			break loop
+		}
+	}
+}
+
+func (n *Network) StartUpdateStatus(message Message) {
+	b, _ := message.MarshalBinary()
+	for _, node := range n.Nodes {
+		rip := node.TCPConn.RemoteAddr().String()
+		p := rip[len(findIPAddress(rip))+1:]
+		port, _ := strconv.Atoi(p);
+		if port >= 20000 && port <= 20002 {
+			go func(node Node) {
+				_, err := node.TCPConn.Write(b)
+				if err != nil {
+					fmt.Println("start message send failed to ", node.TCPConn.RemoteAddr())
+				}
+			}(*node)
 		}
 	}
 }
